@@ -1,0 +1,49 @@
+import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
+
+export type Profile = {
+  id: string;
+  full_name: string;
+  work_email: string;
+  employer_id: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  role: 'member' | 'admin';
+  member_number: number;
+  created_at: string;
+  reviewed_at: string | null;
+  employers?: { name: string } | null;
+};
+
+export async function getSession() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { supabase, user: null, profile: null as Profile | null };
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*, employers(name)')
+    .eq('id', user.id)
+    .maybeSingle();
+  return { supabase, user, profile: (profile as Profile) ?? null };
+}
+
+export async function requireAdmin() {
+  const session = await getSession();
+  if (!session.user) redirect('/login?next=/admin');
+  if (session.profile?.role !== 'admin') redirect('/card');
+  return session;
+}
+
+export function memberId(n: number | null | undefined) {
+  return 'FC-' + String(n ?? 0).padStart(6, '0');
+}
+
+export function siteUrl() {
+  return (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
+}
+
+export function safeNext(next: string | null | undefined, fallback = '/card') {
+  if (!next || !next.startsWith('/') || next.startsWith('//')) return fallback;
+  return next;
+}
