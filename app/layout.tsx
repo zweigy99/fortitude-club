@@ -1,15 +1,24 @@
 import './globals.css';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getSession } from '@/lib/auth';
 import mark from '@/components/fc-mark.png';
-import lockupWhite from '@/components/fc-lockup-white.png';
+import markWhite from '@/components/fc-mark-white.png';
+import InstallPrompt from '@/components/InstallPrompt';
 
 export const metadata: Metadata = {
   title: 'Fortitude Club | Better benefits. Healthier teams.',
   description:
     'Fortitude connects employers with premium local wellness providers, so every employee benefit actually gets used.',
+  appleWebApp: { capable: true, title: 'Fortitude', statusBarStyle: 'default' },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#f8f6f1',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -49,9 +58,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </nav>
         </header>
         <main>{children}</main>
+        {user && <InstallPrompt />}
         <footer className="site-footer">
           <div className="wrap footer-inner">
-            <Image src={lockupWhite} alt="Fortitude Club" height={72} style={{ width: 'auto', height: 72 }} />
+            <div className="brand" style={{ color: 'var(--paper)' }}>
+              <Image src={markWhite} alt="" height={56} style={{ width: 'auto', height: 56 }} />
+              <span className="brand-word">Fortitude Club</span>
+            </div>
             <p style={{ maxWidth: 360 }}>
               Connecting employers with premium local wellness providers, so every employee benefit actually gets used.
             </p>
