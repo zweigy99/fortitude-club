@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import markWhite from '@/components/fc-mark-white.png';
 
 type Props = {
   name: string;
@@ -8,10 +10,9 @@ type Props = {
   memberId: string;
   since: string;
   live?: boolean;
-  tilt?: boolean;
 };
 
-export default function MemberCard({ name, employer, memberId, since, live = false, tilt = false }: Props) {
+export default function MemberCard({ name, employer, memberId, since, live = false }: Props) {
   const [now, setNow] = useState<string>('');
 
   useEffect(() => {
@@ -28,16 +29,19 @@ export default function MemberCard({ name, employer, memberId, since, live = fal
   }, [live]);
 
   return (
-    <div className={`member-card${tilt ? ' tilt' : ''}`} role="group" aria-label={`Fortitude Club membership card for ${name}`}>
+    <div className="member-card" role="group" aria-label={`Fortitude Club membership card for ${name}`}>
       <div className="mc-top">
-        <span className="mc-brand">FORTITUDE CLUB</span>
+        <span className="mc-brand">
+          <Image src={markWhite} alt="" height={34} style={{ width: 'auto', height: 34 }} />
+          <span className="mc-brand-word">Fortitude Club</span>
+        </span>
         <span className="mc-status">
           <span className={`mc-dot${live ? ' mc-live' : ''}`} aria-hidden="true" />
           Active member
         </span>
       </div>
       <div className="mc-number">{memberId}</div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, paddingBottom: 6 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, paddingBottom: 4 }}>
         <div>
           <div className="mc-name">{name}</div>
           <div className="mc-meta">{employer}</div>

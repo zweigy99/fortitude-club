@@ -3,28 +3,51 @@ import Link from 'next/link';
 export type OfferRow = {
   id: string;
   title: string;
-  description: string | null;
-  partners: { name: string; category: string; neighbourhood: string | null; image_url: string | null } | null;
+  kind: string | null;
+  promo_code?: string | null;
+  partner_id: string;
+  sort_order?: number;
 };
 
-export default function OfferTile({ offer }: { offer: OfferRow }) {
-  const p = offer.partners;
+export type PartnerWithOffers = {
+  id: string;
+  name: string;
+  category: string;
+  neighbourhood: string | null;
+  description: string | null;
+  offers: OfferRow[];
+};
+
+export function PartnerBlock({ partner, linkOffers = true }: { partner: PartnerWithOffers; linkOffers?: boolean }) {
+  const offers = [...(partner.offers ?? [])].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
   return (
-    <Link href={`/offers/${offer.id}`} className="tile">
-      <div
-        className="tile-img"
-        style={p?.image_url ? { backgroundImage: `url(${JSON.stringify(p.image_url)})` } : undefined}
-        aria-hidden="true"
-      />
-      <div className="tile-body">
-        <span className="tile-partner">{p?.name}</span>
-        <span className="tile-title">{offer.title}</span>
-        {offer.description && <p className="muted small">{offer.description}</p>}
-        <span className="small muted">
-          {p?.category}
-          {p?.neighbourhood ? `, ${p.neighbourhood}` : ''}
-        </span>
+    <article className="partner">
+      <div>
+        <div className="partner-name">{partner.name}</div>
+        {partner.neighbourhood && <div className="label-quiet partner-place">{partner.neighbourhood}</div>}
       </div>
-    </Link>
+      <div className="stack" style={{ gap: 20 }}>
+        {partner.description && <p className="muted">{partner.description}</p>}
+        {offers.length > 0 && (
+          <div className="offers">
+            {offers.map((o) => {
+              const intro = (o.kind ?? '').toLowerCase().startsWith('intro');
+              const body = (
+                <>
+                  <span className={intro ? 'label' : 'label-quiet'}>{o.kind || 'Member offer'}</span>
+                  <span className="offer-title">{o.title}</span>
+                  {linkOffers && <span className="offer-more">View offer and how to redeem</span>}
+                </>
+              );
+              return linkOffers ? (
+                <Link key={o.id} href={`/offers/${o.id}`} className={`offer${intro ? ' intro' : ''}`}>{body}</Link>
+              ) : (
+                <div key={o.id} className={`offer${intro ? ' intro' : ''}`}>{body}</div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </article>
   );
 }

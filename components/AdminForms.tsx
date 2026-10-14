@@ -18,8 +18,21 @@ export function OfferFields({ partners, offer }: { partners: Partner[]; offer?: 
         </div>
       </div>
       <div className="field">
+        <label htmlFor="kind">Offer type</label>
+        <select id="kind" name="kind" defaultValue={o.kind ?? 'Intro offer'}>
+          <option value="Intro offer">Intro offer</option>
+          <option value="Standard offer">Standard offer</option>
+          <option value="Member offer">Member offer</option>
+        </select>
+      </div>
+      <div className="field">
         <label htmlFor="description">Description</label>
         <textarea id="description" name="description" defaultValue={o.description ?? ''} />
+      </div>
+      <div className="field">
+        <label htmlFor="steps">How to redeem, step by step</label>
+        <textarea id="steps" name="steps" defaultValue={o.steps ?? ''} placeholder={'One step per line, e.g.\nOpen the booking page.\nEnter the code at checkout.'} style={{ minHeight: 140 }} />
+        <span className="hint">One step per line. Members see these after tapping Redeem.</span>
       </div>
       <div className="field">
         <label htmlFor="terms">Terms</label>

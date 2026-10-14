@@ -1,10 +1,13 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getSession } from '@/lib/auth';
+import mark from '@/components/fc-mark.png';
+import lockupWhite from '@/components/fc-lockup-white.png';
 
 export const metadata: Metadata = {
-  title: 'Fortitude Club',
+  title: 'Fortitude Club | Better benefits. Healthier teams.',
   description:
     'Fortitude connects employers with premium local wellness providers, so every employee benefit actually gets used.',
 };
@@ -18,13 +21,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Public+Sans:wght@400;500;600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600&display=swap"
         />
       </head>
       <body>
         <header className="site-header">
           <nav className="wrap nav" aria-label="Main">
-            <Link href="/" className="brand">FORTITUDE CLUB</Link>
+            <Link href="/" className="brand" aria-label="Fortitude Club home">
+              <Image src={mark} alt="" height={40} priority style={{ width: 'auto', height: 40 }} />
+              <span className="brand-word">Fortitude Club</span>
+            </Link>
             <div className="nav-links">
               <Link href="/offers">Offers</Link>
               <Link href="/partners">Partners</Link>
@@ -36,7 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               ) : (
                 <>
                   <Link href="/login">Sign in</Link>
-                  <Link href="/signup" className="btn btn-primary btn-small">Join with your work email</Link>
+                  <Link href="/signup" className="btn btn-primary btn-small">Join</Link>
                 </>
               )}
             </div>
@@ -45,14 +51,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <main>{children}</main>
         <footer className="site-footer">
           <div className="wrap footer-inner">
-            <span className="brand" style={{ color: '#eef1ee' }}>FORTITUDE CLUB</span>
-            <div className="row" style={{ gap: 22 }}>
-              <Link href="/offers">Offers</Link>
-              <Link href="/partners">Partners</Link>
-              <Link href="/employers">For employers</Link>
+            <Image src={lockupWhite} alt="Fortitude Club" height={72} style={{ width: 'auto', height: 72 }} />
+            <p style={{ maxWidth: 360 }}>
+              Connecting employers with premium local wellness providers, so every employee benefit actually gets used.
+            </p>
+            <div className="stack" style={{ gap: 6 }}>
+              <div className="row" style={{ gap: 20 }}>
+                <Link href="/offers">Offers</Link>
+                <Link href="/partners">Partners</Link>
+                <Link href="/employers">For employers</Link>
+                <Link href="/contact">Contact</Link>
+              </div>
               <a href="mailto:info@fortitudeclub.ca">info@fortitudeclub.ca</a>
+              <span>© {new Date().getFullYear()} Fortitude Club. All rights reserved.</span>
             </div>
-            <span>© {new Date().getFullYear()} Fortitude Club. All rights reserved.</span>
           </div>
         </footer>
       </body>

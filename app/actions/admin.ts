@@ -97,7 +97,9 @@ function offerFields(f: FormData) {
   return {
     partner_id: str(f, 'partner_id'),
     title: str(f, 'title'),
+    kind: str(f, 'kind') ?? 'Member offer',
     description: str(f, 'description'),
+    steps: str(f, 'steps'),
     terms: str(f, 'terms'),
     redeem_type: str(f, 'redeem_type') ?? 'show_card',
     promo_code: str(f, 'promo_code'),

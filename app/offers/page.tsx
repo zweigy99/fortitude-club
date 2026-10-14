@@ -1,43 +1,24 @@
 import Link from 'next/link';
-import OfferTile, { OfferRow } from '@/components/OfferTile';
-import { createClient } from '@/lib/supabase/server';
+import { PartnerBlock } from '@/components/OfferTile';
+import { getPartnersWithOffers } from '@/lib/partners';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Member offers | Fortitude Club' };
 
-export default async function OffersPage({ searchParams }: { searchParams: { category?: string; q?: string } }) {
-  const supabase = createClient();
-  const { data } = await supabase
-    .from('offers')
-    .select('id, title, description, partners!inner(name, category, neighbourhood, image_url, active)')
-    .eq('active', true)
-    .eq('partners.active', true)
-    .order('sort_order');
-
-  const all = (data ?? []) as unknown as OfferRow[];
-  const categories = Array.from(new Set(all.map((o) => o.partners?.category).filter(Boolean))).sort() as string[];
+export default async function OffersPage({ searchParams }: { searchParams: { category?: string } }) {
+  const all = (await getPartnersWithOffers()).filter((p) => p.offers.length > 0);
+  const categories = Array.from(new Set(all.map((p) => p.category).filter(Boolean))).sort();
   const category = searchParams.category;
-  const q = (searchParams.q ?? '').trim().toLowerCase();
-  const offers = all.filter(
-    (o) =>
-      (!category || o.partners?.category === category) &&
-      (!q || `${o.title} ${o.description ?? ''} ${o.partners?.name}`.toLowerCase().includes(q))
-  );
+  const partners = all.filter((p) => !category || p.category === category);
 
   return (
     <section className="section">
       <div className="wrap stack-lg">
-        <div className="stack">
+        <div className="stack" style={{ gap: 16 }}>
+          <span className="label">Your Fortitude offers</span>
           <h1>Member offers</h1>
-          <p className="lede">Browse what's on. Signed-in members can redeem any offer from its page.</p>
+          <p className="lede">Every partner has an intro offer to try them out and a standard offer for after. Signed-in members tap an offer to reveal its code and the steps to redeem it.</p>
         </div>
-
-        <form className="row" action="/offers" role="search">
-          {category && <input type="hidden" name="category" value={category} />}
-          <label htmlFor="q" className="small" style={{ position: 'absolute', left: -9999 }}>Search offers</label>
-          <input id="q" type="search" name="q" defaultValue={searchParams.q ?? ''} placeholder="Search by studio or offer" style={{ maxWidth: 360 }} />
-          <button className="btn btn-ghost" type="submit">Search</button>
-        </form>
 
         {categories.length > 1 && (
           <nav className="filters" aria-label="Filter by category">
@@ -50,12 +31,12 @@ export default async function OffersPage({ searchParams }: { searchParams: { cat
           </nav>
         )}
 
-        {offers.length > 0 ? (
-          <div className="grid">{offers.map((o) => <OfferTile key={o.id} offer={o} />)}</div>
+        {partners.length > 0 ? (
+          <div>{partners.map((p) => <PartnerBlock key={p.id} partner={p} />)}</div>
         ) : (
           <div className="panel stack">
-            <h3>No offers match that</h3>
-            <p className="muted">Try another category or clear your search.</p>
+            <h3>No offers here yet</h3>
+            <p className="muted">Try another category, or check back soon as new partners join.</p>
             <div><Link href="/offers" className="btn btn-ghost">Show all offers</Link></div>
           </div>
         )}

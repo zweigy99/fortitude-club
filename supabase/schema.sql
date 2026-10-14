@@ -45,6 +45,8 @@ create table if not exists public.offers (
   --   'show_card' = show the digital card at the front desk
   --   'code'      = reveal a promo code after the member taps Redeem
   --   'link'      = send the member to the partner's booking page
+  kind text not null default 'Member offer',
+  steps text,
   redeem_type text not null default 'show_card' check (redeem_type in ('show_card','code','link')),
   promo_code text,
   redeem_url text,
