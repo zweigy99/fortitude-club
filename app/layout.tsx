@@ -1,4 +1,5 @@
 import './globals.css';
+import './extra.css';
 import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -55,6 +56,24 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </>
               )}
             </div>
+            <details className="mobile-menu">
+              <summary aria-label="Menu"><span className="plus" aria-hidden="true">+</span></summary>
+              <div className="mobile-panel">
+                <Link href="/offers">Offers</Link>
+                <Link href="/partners">Partners</Link>
+                <Link href="/employers">For employers</Link>
+                <Link href="/contact">Contact</Link>
+                {profile?.role === 'admin' && <Link href="/admin">Admin</Link>}
+                {user ? (
+                  <Link href="/card" className="btn btn-primary">My card</Link>
+                ) : (
+                  <>
+                    <Link href="/login">Employee login</Link>
+                    <Link href="/signup" className="btn btn-primary">Join with your work email</Link>
+                  </>
+                )}
+              </div>
+            </details>
           </nav>
         </header>
         <main>{children}</main>

@@ -1,20 +1,33 @@
 import Link from 'next/link';
 import MemberCard from '@/components/MemberCard';
 import { PartnerBlock } from '@/components/OfferTile';
-import { getPartnersWithOffers } from '@/lib/partners';
+import { getPartnersWithOffers } from '@/components/partners';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   const partners = (await getPartnersWithOffers()).filter((p) => p.offers.length > 0);
+  const { user } = await getSession();
 
   return (
     <>
-      <section className="hero">
+      <section className="fc-intro">
+        <div className="wrap intro-inner">
+          <span className="label">Fortitude Club</span>
+          <h1>Better benefits.<br />Healthier teams.</h1>
+          <div className="intro-actions">
+            <Link href={user ? '/card' : '/login'} className="btn btn-outline-light">{user ? 'My membership card' : 'Employee login'}</Link>
+            <a href="#learn" className="btn btn-outline-light">Learn more</a>
+          </div>
+        </div>
+      </section>
+
+      <section className="hero" id="learn">
         <div className="wrap hero-grid">
           <div className="hero-copy">
             <span className="label">Workplace wellness</span>
-            <h1>Better benefits.<br />Healthier teams.</h1>
+            <h2 style={{ fontSize: 'clamp(36px, 5vw, 60px)' }}>Your wellness benefit, on your phone.</h2>
             <p className="lede">
               Fortitude connects employers with premium local wellness providers, making it easier for employees to
               invest in their health while staying within budget.
