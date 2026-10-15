@@ -12,7 +12,10 @@ export default async function Home() {
 
   return (
     <>
-      <section className="fc-intro">
+      <section
+        className="fc-intro has-photo"
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1717500252297-b09508db7ceb?fm=jpg&q=70&w=2400&auto=format&fit=crop')" }}
+      >
         <div className="wrap intro-inner">
           <span className="label">Fortitude Club</span>
           <h1>Better benefits.<br />Healthier teams.</h1>
@@ -21,6 +24,14 @@ export default async function Home() {
             <a href="#learn" className="btn btn-outline-light">Learn more</a>
           </div>
         </div>
+        <a
+          href="https://unsplash.com/photos/a-room-filled-with-lots-of-machines-and-a-plant-7UoAoaVVyRE"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ position: 'absolute', right: 16, bottom: 12, fontSize: 11, color: 'rgba(248,246,241,.55)', textDecoration: 'none' }}
+        >
+          Photo: Ahmet Kurt / Unsplash
+        </a>
       </section>
 
       <section className="hero" id="learn">
