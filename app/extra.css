@@ -19,6 +19,10 @@
 }
 .btn-outline-light:hover { background: var(--paper); color: var(--ink); }
 
+/* Side padding for header and footer (their vertical padding was overriding it) */
+.wrap.nav { padding: 14px 28px; }
+.wrap.footer-inner { padding: 48px 28px; }
+
 /* Mobile menu */
 .site-header { position: relative; z-index: 20; }
 .mobile-menu { display: none; }
@@ -36,7 +40,8 @@
 
 @media (max-width: 760px) {
   .wrap { padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); }
-  .nav { padding: 16px 0; flex-wrap: nowrap; }
+  .wrap.nav { padding: 16px max(24px, env(safe-area-inset-right, 0px)) 16px max(24px, env(safe-area-inset-left, 0px)); flex-wrap: nowrap; }
+  .wrap.footer-inner { padding: 40px max(24px, env(safe-area-inset-right, 0px)) 40px max(24px, env(safe-area-inset-left, 0px)); }
   .nav-links { display: none; }
   .mobile-menu { display: block; }
   .brand-word { font-size: 12px; letter-spacing: 0.26em; }
