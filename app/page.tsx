@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import MemberCard from '@/components/MemberCard';
-import { PartnerBlock } from '@/components/OfferTile';
+import { PartnerBlock, LogoStrip } from '@/components/OfferTile';
 import { getPartnersWithOffers } from '@/components/partners';
 import { getSession } from '@/lib/auth';
 
@@ -53,6 +53,15 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {partners.length > 0 && (
+        <section className="section" style={{ paddingTop: 0 }}>
+          <div className="wrap stack" style={{ gap: 20 }}>
+            <span className="label-quiet">Our partners</span>
+            <LogoStrip partners={partners} />
+          </div>
+        </section>
+      )}
 
       <section className="band section">
         <div className="wrap split" style={{ gap: 56, alignItems: 'start' }}>
