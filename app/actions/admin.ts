@@ -2,7 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { requireAdmin } from '@/lib/auth';
+import { requireAdmin, memberId } from '@/lib/auth';
+import { sendApprovedEmail, sendRejectedEmail } from '@/lib/email';
 
 const str = (f: FormData, k: string) => {
   const v = String(f.get(k) ?? '').trim();
@@ -14,10 +15,22 @@ export async function setMemberStatus(formData: FormData) {
   const id = String(formData.get('id'));
   const status = String(formData.get('status'));
   if (!['approved', 'rejected', 'pending'].includes(status)) return;
-  await supabase
+  const { data: before } = await supabase
     .from('profiles')
-    .update({ status, reviewed_at: status === 'pending' ? null : new Date().toISOString() })
-    .eq('id', id);
+    .select('status, work_email, full_name, member_number, approval_email_sent_at, employers(name)')
+    .eq('id', id)
+    .maybeSingle();
+  const update: Record<string, unknown> = { status, reviewed_at: status === 'pending' ? null : new Date().toISOString() };
+  const { error } = await supabase.from('profiles').update(update).eq('id', id);
+  if (!error && before && before.status !== status) {
+    const emp = (before as any).employers?.name ?? null;
+    if (status === 'approved') {
+      const sent = await sendApprovedEmail({ email: before.work_email, name: before.full_name, employer: emp, memberId: memberId(before.member_number) });
+      if (sent) await supabase.from('profiles').update({ approval_email_sent_at: new Date().toISOString() }).eq('id', id);
+    } else if (status === 'rejected') {
+      await sendRejectedEmail({ email: before.work_email, name: before.full_name });
+    }
+  }
   revalidatePath('/admin');
 }
 
