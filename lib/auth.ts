@@ -20,11 +20,13 @@ export async function getSession() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { supabase, user: null, profile: null as Profile | null };
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*, employers(name)')
-    .eq('id', user.id)
-    .maybeSingle();
+  const load = () => supabase.from('profiles').select('*, employers(name)').eq('id', user.id).maybeSingle();
+  let { data: profile } = await load();
+  if (!profile) {
+    // Self-repair: recreate a missing membership record for this login
+    await supabase.rpc('ensure_my_profile');
+    ({ data: profile } = await load());
+  }
   return { supabase, user, profile: (profile as Profile) ?? null };
 }
 
