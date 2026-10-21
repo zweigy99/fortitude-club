@@ -17,6 +17,9 @@ export default async function CardPage({ searchParams }: { searchParams: { notic
         <div className="wrap narrow stack">
           <h1 style={{ fontSize: 56 }}>Account not set up</h1>
           <p>We couldn't find your membership profile. Email <a href="mailto:info@fortitudeclub.ca">info@fortitudeclub.ca</a> from your work email.</p>
+          <form action={signOut}>
+            <button type="submit" className="btn btn-ghost">Sign out</button>
+          </form>
         </div>
       </section>
     );
