@@ -93,6 +93,15 @@ export function PartnerFields({ partner }: { partner?: any }) {
           <span className="hint">A landscape photo link, shown on offer tiles.</span>
         </div>
       </div>
+      <div className="field">
+        <label htmlFor="p_logo">Logo image link</label>
+        <input id="p_logo" name="logo_url" type="text" defaultValue={p.logo_url ?? ''} placeholder="https://… (PNG or SVG, ideally on a white or transparent background)" />
+        <span className="hint">Shown on the home, offers and partners pages, linking to the partner's website. Leave blank to show the name instead.</span>
+        {p.logo_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={p.logo_url} alt="Current logo" style={{ height: 48, width: 'auto', marginTop: 8, background: '#fff', padding: 6, border: '1px solid var(--line)' }} />
+        )}
+      </div>
       <div className="field"><label htmlFor="p_desc">Description</label><textarea id="p_desc" name="description" defaultValue={p.description ?? ''} /></div>
       <label className="check"><input name="active" type="checkbox" defaultChecked={p.active ?? true} /> Shown on the site</label>
     </>
