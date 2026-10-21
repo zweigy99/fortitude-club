@@ -82,6 +82,7 @@ function partnerFields(f: FormData) {
     address: str(f, 'address'),
     website: str(f, 'website'),
     image_url: str(f, 'image_url'),
+    logo_url: str(f, 'logo_url'),
     description: str(f, 'description'),
     active: f.get('active') === 'on',
   };
