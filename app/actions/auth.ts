@@ -30,7 +30,29 @@ export async function signUp(formData: FormData) {
   });
   if (error) back('/signup', error.message);
 
-  redirect('/signup?sent=1');
+  redirect(`/signup?sent=1&email=${encodeURIComponent(email)}`);
+}
+
+export async function resendConfirmation(formData: FormData) {
+  const email = String(formData.get('email') || '').trim().toLowerCase();
+  const from = String(formData.get('from') || '');
+  const base =
+    from === 'signup'
+      ? `/signup?sent=1&email=${encodeURIComponent(email)}`
+      : `/login?resend=1&email=${encodeURIComponent(email)}`;
+  if (!email.includes('@')) back(base, 'Enter the email you signed up with.');
+
+  const supabase = createClient();
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+    options: { emailRedirectTo: `${siteUrl()}/auth/callback?next=/card` },
+  });
+  if (error && /rate|seconds|security purposes|too many/i.test(error.message)) {
+    back(base, 'Please wait a minute before requesting another email.');
+  }
+  // Same message whether or not the account exists or is already confirmed
+  redirect(`${base}&resent=1`);
 }
 
 export async function signIn(formData: FormData) {
@@ -41,10 +63,13 @@ export async function signIn(formData: FormData) {
   const supabase = createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    const msg = /confirm/i.test(error.message)
-      ? 'Confirm your email first. Check your inbox for the link we sent.'
-      : 'That email and password combination did not match an account.';
-    back(`/login?next=${encodeURIComponent(next)}`, msg);
+    if (/confirm/i.test(error.message)) {
+      back(
+        `/login?next=${encodeURIComponent(next)}&resend=1&email=${encodeURIComponent(email)}`,
+        'Confirm your email first. Check your inbox (and junk folder) for the link, or send a new one below.'
+      );
+    }
+    back(`/login?next=${encodeURIComponent(next)}`, 'That email and password combination did not match an account.');
   }
   redirect(next);
 }
