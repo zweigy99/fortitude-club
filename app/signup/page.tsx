@@ -1,13 +1,13 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { signUp } from '@/app/actions/auth';
+import { signUp, resendConfirmation } from '@/app/actions/auth';
 import { getSession } from '@/lib/auth';
 import Alerts from '@/components/Alerts';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Join | Fortitude Club' };
 
-export default async function SignUpPage({ searchParams }: { searchParams: { error?: string; sent?: string } }) {
+export default async function SignUpPage({ searchParams }: { searchParams: { error?: string; sent?: string; email?: string; resent?: string } }) {
   const { supabase, user } = await getSession();
   if (user) redirect('/card');
 
@@ -17,7 +17,17 @@ export default async function SignUpPage({ searchParams }: { searchParams: { err
         <div className="wrap narrow stack">
           <h1 style={{ fontSize: 56 }}>Check your inbox</h1>
           <p className="lede">We sent a confirmation link to your work email. Open it on this device to confirm your address.</p>
-          <p>After that, our team verifies your employer. Your membership card switches on once you're approved.</p>
+          <p>If your employer is a Fortitude partner, your membership card switches on as soon as you confirm. Otherwise our team verifies your employer first.</p>
+          <p className="muted small">Work emails sometimes land in junk or a security quarantine. The link stays valid for 24 hours.</p>
+          <Alerts error={searchParams.error} notice={searchParams.resent ? 'A new confirmation link is on its way. Check your inbox and junk folder.' : undefined} />
+          <form action={resendConfirmation} className="form" style={{ marginTop: 8 }}>
+            <input type="hidden" name="from" value="signup" />
+            <div className="field">
+              <label htmlFor="resend-email">Didn't get it?</label>
+              <input id="resend-email" name="email" type="email" autoComplete="email" defaultValue={searchParams.email ?? ''} required />
+            </div>
+            <div><button type="submit" className="btn btn-ghost">Resend confirmation email</button></div>
+          </form>
         </div>
       </section>
     );
