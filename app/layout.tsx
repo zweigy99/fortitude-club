@@ -7,6 +7,7 @@ import { getSession } from '@/lib/auth';
 import mark from '@/components/fc-mark.png';
 import markWhite from '@/components/fc-mark-white.png';
 import InstallPrompt from '@/components/InstallPrompt';
+import { signOut } from '@/app/actions/auth';
 
 export const metadata: Metadata = {
   title: 'Fortitude Club | Better benefits. Healthier teams.',
@@ -48,7 +49,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Link href="/contact">Contact</Link>
               {profile?.role === 'admin' && <Link href="/admin">Admin</Link>}
               {user ? (
-                <Link href="/card" className="btn btn-primary btn-small">My card</Link>
+                <>
+                  <form action={signOut} style={{ display: 'inline' }}>
+                    <button type="submit" style={{ background: 'none', border: 0, padding: 0, font: 'inherit', fontSize: 15, color: 'var(--ink)', cursor: 'pointer' }}>Sign out</button>
+                  </form>
+                  <Link href="/card" className="btn btn-primary btn-small">My card</Link>
+                </>
               ) : (
                 <>
                   <Link href="/login">Sign in</Link>
@@ -65,7 +71,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Link href="/contact">Contact</Link>
                 {profile?.role === 'admin' && <Link href="/admin">Admin</Link>}
                 {user ? (
-                  <Link href="/card" className="btn btn-primary">My card</Link>
+                  <>
+                    <form action={signOut}>
+                      <button type="submit" style={{ background: 'none', border: 0, borderBottom: '1px solid var(--line)', padding: '15px 0', width: '100%', textAlign: 'left', font: 'inherit', fontSize: 18, color: 'var(--ink)', cursor: 'pointer' }}>Sign out</button>
+                    </form>
+                    <Link href="/card" className="btn btn-primary">My card</Link>
+                  </>
                 ) : (
                   <>
                     <Link href="/login">Employee login</Link>
