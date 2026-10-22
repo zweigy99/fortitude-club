@@ -2,13 +2,16 @@ import Link from 'next/link';
 import MemberCard from '@/components/MemberCard';
 import { PartnerBlock, LogoStrip } from '@/components/OfferTile';
 import { getPartnersWithOffers } from '@/components/partners';
-import { getSession } from '@/lib/auth';
+import { getSession, getSetting } from '@/lib/auth';
+import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   const partners = (await getPartnersWithOffers()).filter((p) => p.offers.length > 0);
   const { user } = await getSession();
+  const { data: stats } = await createClient().from('site_stats').select('id, label, value').order('sort_order');
+  const booking = await getSetting('booking_link');
 
   return (
     <>
@@ -32,6 +35,45 @@ export default async function Home() {
         >
           Photo: Ahmet Kurt / Unsplash
         </a>
+      </section>
+
+      <section className="section" style={{ paddingBottom: 0 }}>
+        <div className="wrap stack-lg">
+          <div className="stack" style={{ gap: 10 }}>
+            <span className="label">Who is Fortitude for?</span>
+            <h2>Choose your path.</h2>
+          </div>
+          <div className="audience">
+            <Link href={user ? '/card' : '/signup'} className="audience-tile">
+              <span className="label">I&apos;m an employee</span>
+              <span className="audience-title">Get my membership card</span>
+              <span className="muted">Sign up with your work email and unlock exclusive local wellness offers.</span>
+              <span className="audience-go">{user ? 'Open my card' : 'Join now'} →</span>
+            </Link>
+            <Link href="/employers" className="audience-tile">
+              <span className="label">I&apos;m an employer</span>
+              <span className="audience-title">Bring Fortitude to my team</span>
+              <span className="muted">Better benefits, healthier teams, and wellness benefits that actually get used.</span>
+              <span className="audience-go">See how it works →</span>
+            </Link>
+            <Link href="/partners#become-a-partner" className="audience-tile">
+              <span className="label">I&apos;m a studio or clinic</span>
+              <span className="audience-title">Become a partner</span>
+              <span className="muted">Reach highly engaged local professionals with no change to your front desk.</span>
+              <span className="audience-go">Partner with us →</span>
+            </Link>
+          </div>
+          {stats && stats.length > 0 && (
+            <div className="stats-strip">
+              {stats.map((st: any) => (
+                <div key={st.id} className="stat-item">
+                  <span className="stat-value">{st.value}</span>
+                  <span className="stat-label">{st.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </section>
 
       <section className="hero" id="learn">
@@ -140,7 +182,10 @@ export default async function Home() {
             <span className="label">For employers</span>
             <h2 style={{ fontSize: 36 }}>Ready to reimagine workplace wellness?</h2>
             <p>Fortitude helps employers deliver wellness benefits employees actually value, while connecting premium wellness providers with highly engaged customers.</p>
-            <div><Link href="/employers" className="btn btn-primary">Let's start the conversation</Link></div>
+            <div className="row">
+              {booking && <a href={booking} target="_blank" rel="noopener noreferrer" className="btn btn-primary">Book a call</a>}
+              <Link href="/employers" className={booking ? 'btn btn-ghost' : 'btn btn-primary'}>Let&apos;s start the conversation</Link>
+            </div>
           </div>
           <div className="panel stack">
             <span className="label">For wellness partners</span>

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { PartnerBlock } from '@/components/OfferTile';
-import { getPartnersWithOffers } from '@/lib/partners';
+import { getPartnersWithOffers } from '@/components/partners';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Member offers | Fortitude Club' };

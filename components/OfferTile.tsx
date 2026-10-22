@@ -17,6 +17,9 @@ export type PartnerWithOffers = {
   description: string | null;
   logo_url?: string | null;
   website?: string | null;
+  slug?: string | null;
+  lat?: number | null;
+  lng?: number | null;
   offers: OfferRow[];
 };
 
@@ -57,9 +60,12 @@ export function PartnerBlock({ partner, linkOffers = true }: { partner: PartnerW
       <div>
         <PartnerMark partner={partner} height={partner.name.toLowerCase().includes('totum') ? 72 : 48} />
         {partner.neighbourhood && <div className="label-quiet partner-place">{partner.neighbourhood}</div>}
-        {partner.website && (
-          <a href={partner.website} target="_blank" rel="noopener noreferrer" className="small" style={{ display: 'inline-block', marginTop: 8 }}>Visit website</a>
-        )}
+        <div className="row small" style={{ gap: 14, marginTop: 8 }}>
+          {partner.slug && <Link href={`/partners/${partner.slug}`}>Partner page</Link>}
+          {partner.website && (
+            <a href={partner.website} target="_blank" rel="noopener noreferrer">Visit website</a>
+          )}
+        </div>
       </div>
       <div className="stack" style={{ gap: 20 }}>
         {partner.description && <p className="muted">{partner.description}</p>}

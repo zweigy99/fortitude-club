@@ -102,6 +102,34 @@ export function PartnerFields({ partner }: { partner?: any }) {
           <img src={p.logo_url} alt="Current logo" style={{ height: 48, width: 'auto', marginTop: 8, background: '#fff', padding: 6, border: '1px solid var(--line)' }} />
         )}
       </div>
+      <div className="split" style={{ gap: 16 }}>
+        <div className="field">
+          <label htmlFor="p_slug">Page address</label>
+          <input id="p_slug" name="slug" type="text" defaultValue={p.slug ?? ''} placeholder="e.g. strong-pilates" />
+          <span className="hint">fortitudeclub.ca/partners/<b>{p.slug || 'page-address'}</b>. Leave blank to use the name.</span>
+        </div>
+        <div className="field">
+          <label htmlFor="p_contact">Partner contact email</label>
+          <input id="p_contact" name="contact_email" type="email" defaultValue={p.contact_email ?? ''} placeholder="owner@studio.com" />
+          <span className="hint">Where monthly partner reports are sent.</span>
+        </div>
+      </div>
+      <div className="field">
+        <label htmlFor="p_hours">Hours</label>
+        <textarea id="p_hours" name="hours" defaultValue={p.hours ?? ''} placeholder={'Mon–Fri 6am–9pm\nSat–Sun 8am–6pm'} style={{ minHeight: 70 }} />
+      </div>
+      <div className="field">
+        <label htmlFor="p_photos">Photo links (one per line)</label>
+        <textarea id="p_photos" name="photos" defaultValue={p.photos ?? ''} placeholder="https://…" style={{ minHeight: 70 }} />
+        <span className="hint">Shown as a gallery on the partner&apos;s page. Use photos you have permission to use.</span>
+      </div>
+      <div className="split" style={{ gap: 16 }}>
+        <div className="field"><label htmlFor="p_lat">Map latitude</label><input id="p_lat" name="lat" type="text" defaultValue={p.lat ?? ''} placeholder="43.6457" /></div>
+        <div className="field">
+          <label htmlFor="p_lng">Map longitude</label><input id="p_lng" name="lng" type="text" defaultValue={p.lng ?? ''} placeholder="-79.3896" />
+          <span className="hint">In Google Maps, right-click the studio and click the numbers at the top to copy them.</span>
+        </div>
+      </div>
       <div className="field"><label htmlFor="p_desc">Description</label><textarea id="p_desc" name="description" defaultValue={p.description ?? ''} /></div>
       <label className="check"><input name="active" type="checkbox" defaultChecked={p.active ?? true} /> Shown on the site</label>
     </>

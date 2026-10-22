@@ -1,8 +1,12 @@
 import Link from 'next/link';
+import { getSetting } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = { title: 'For employers | Fortitude Club' };
 
-export default function EmployersPage() {
+export default async function EmployersPage() {
+  const booking = await getSetting('booking_link');
   return (
     <>
       <section className="section">
@@ -37,7 +41,8 @@ export default function EmployersPage() {
           <h2>Ready to reimagine workplace wellness?</h2>
           <p className="muted">Fortitude helps employers deliver wellness benefits employees actually value while connecting premium wellness providers with highly engaged customers. Let's start the conversation.</p>
           <div className="row">
-            <a href="mailto:info@fortitudeclub.ca?subject=Fortitude%20Club%20for%20our%20team" className="btn btn-light">Email info@fortitudeclub.ca</a>
+            {booking && <a href={booking} target="_blank" rel="noopener noreferrer" className="btn btn-light">Book a call</a>}
+            <a href="mailto:info@fortitudeclub.ca?subject=Fortitude%20Club%20for%20our%20team" className={booking ? 'btn btn-ghost' : 'btn btn-light'} style={booking ? { color: 'var(--paper)', borderColor: 'var(--paper)' } : undefined}>Email info@fortitudeclub.ca</a>
             <Link href="/offers" className="btn btn-ghost" style={{ color: 'var(--paper)', borderColor: 'var(--paper)' }}>See member offers</Link>
           </div>
         </div>

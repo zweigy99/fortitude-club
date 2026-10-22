@@ -72,6 +72,7 @@ export default async function AdminMembers({ searchParams }: { searchParams: { s
                     <td>
                       {m.full_name || '(no name)'}
                       {m.role === 'admin' && <> <span className="badge badge-ok">Admin</span></>}
+                      {m.role === 'employer' && <> <span className="badge badge-warn">HR dashboard</span></>}
                     </td>
                     <td>
                       {m.work_email}{' '}
@@ -112,6 +113,13 @@ export default async function AdminMembers({ searchParams }: { searchParams: { s
                             <input type="hidden" name="id" value={m.id} />
                             <input type="hidden" name="role" value={m.role === 'admin' ? 'member' : 'admin'} />
                             <button className="linkbtn small" type="submit">{m.role === 'admin' ? 'Remove admin' : 'Make admin'}</button>
+                          </form>
+                        )}
+                        {status === 'approved' && m.id !== user!.id && m.role !== 'admin' && (
+                          <form action={setMemberRole}>
+                            <input type="hidden" name="id" value={m.id} />
+                            <input type="hidden" name="role" value={m.role === 'employer' ? 'member' : 'employer'} />
+                            <button className="linkbtn small" type="submit">{m.role === 'employer' ? 'Remove HR dashboard' : 'Give HR dashboard'}</button>
                           </form>
                         )}
                       </div>

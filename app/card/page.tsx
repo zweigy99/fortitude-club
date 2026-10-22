@@ -26,6 +26,13 @@ export default async function CardPage({ searchParams }: { searchParams: { notic
   }
 
   const since = new Date(profile.reviewed_at || profile.created_at).toLocaleDateString('en-CA', { month: 'short', year: 'numeric' });
+  const { data: allOffers } = await supabase
+    .from('offers')
+    .select('id, title, kind, created_at, partners!inner(name, slug, active)')
+    .eq('active', true)
+    .eq('partners.active', true)
+    .order('created_at', { ascending: false });
+  const newSince = Date.now() - 31 * 864e5;
   const { data: history } = await supabase
     .from('redemptions')
     .select('id, created_at, offers(id, title, partners(name))')
@@ -40,7 +47,7 @@ export default async function CardPage({ searchParams }: { searchParams: { notic
         {profile.status === 'approved' ? (
           <>
             <div className="stack">
-              <h1 style={{ fontSize: 56 }}>Your membership card</h1>
+              <h1 style={{ fontSize: 56 }}>Hi {(profile.full_name || '').split(' ')[0] || 'there'}.</h1>
               <p className="muted">Show this screen at the front desk. The live clock shows staff it isn't a screenshot.</p>
             </div>
             <MemberCard
@@ -53,6 +60,41 @@ export default async function CardPage({ searchParams }: { searchParams: { notic
             <div className="row">
               <Link href="/offers" className="btn btn-primary">Browse offers</Link>
             </div>
+            {(() => {
+              const redeemedIds = new Set((history ?? []).map((h: any) => h.offers?.id));
+              const fresh = (allOffers ?? []).filter((o: any) => new Date(o.created_at).getTime() >= newSince);
+              const rest = (allOffers ?? []).filter((o: any) => !redeemedIds.has(o.id));
+              return (
+                <>
+                  {fresh.length > 0 && (
+                    <div className="stack">
+                      <span className="label">New this month</span>
+                      <div className="offers">
+                        {fresh.map((o: any) => (
+                          <Link key={o.id} href={`/offers/${o.id}`} className="offer intro">
+                            <span className="label-quiet">{o.partners?.name}</span>
+                            <span className="offer-title">{o.title}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {rest.length > 0 && (
+                    <div className="stack">
+                      <span className="label">Offers you haven&apos;t tried yet</span>
+                      <div className="offers">
+                        {rest.slice(0, 6).map((o: any) => (
+                          <Link key={o.id} href={`/offers/${o.id}`} className="offer">
+                            <span className="label-quiet">{o.partners?.name} · {o.kind}</span>
+                            <span className="offer-title">{o.title}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
             <div className="stack">
               <h2 style={{ fontSize: 36 }}>Recently redeemed</h2>
               {history && history.length > 0 ? (

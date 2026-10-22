@@ -7,7 +7,7 @@ export type Profile = {
   work_email: string;
   employer_id: string | null;
   status: 'pending' | 'approved' | 'rejected';
-  role: 'member' | 'admin';
+  role: 'member' | 'admin' | 'employer';
   member_number: number;
   created_at: string;
   reviewed_at: string | null;
@@ -48,4 +48,10 @@ export function siteUrl() {
 export function safeNext(next: string | null | undefined, fallback = '/card') {
   if (!next || !next.startsWith('/') || next.startsWith('//')) return fallback;
   return next;
+}
+
+export async function getSetting(key: string) {
+  const supabase = createClient();
+  const { data } = await supabase.from('site_settings').select('value').eq('key', key).maybeSingle();
+  return (data?.value ?? '').trim();
 }

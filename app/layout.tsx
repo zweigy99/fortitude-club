@@ -14,6 +14,15 @@ export const metadata: Metadata = {
   description:
     'Fortitude connects employers with premium local wellness providers, so every employee benefit actually gets used.',
   appleWebApp: { capable: true, title: 'Fortitude', statusBarStyle: 'default' },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://fortitudeclub.ca'),
+  openGraph: {
+    type: 'website',
+    siteName: 'Fortitude Club',
+    title: 'Fortitude Club | Better benefits. Healthier teams.',
+    description: 'Premium local wellness for your team. Fortitude connects employers with the best studios, gyms and recovery clinics.',
+    url: '/',
+  },
+  twitter: { card: 'summary_large_image', title: 'Fortitude Club | Better benefits. Healthier teams.', description: 'Premium local wellness for your team.' },
 };
 
 export const viewport: Viewport = {
@@ -48,6 +57,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Link href="/employers">For employers</Link>
               <Link href="/contact">Contact</Link>
               {profile?.role === 'admin' && <Link href="/admin">Admin</Link>}
+              {profile?.role === 'employer' && <Link href="/employer">Team dashboard</Link>}
               {user ? (
                 <>
                   <form action={signOut} style={{ display: 'inline' }}>
@@ -70,6 +80,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Link href="/employers">For employers</Link>
                 <Link href="/contact">Contact</Link>
                 {profile?.role === 'admin' && <Link href="/admin">Admin</Link>}
+                {profile?.role === 'employer' && <Link href="/employer">Team dashboard</Link>}
                 {user ? (
                   <>
                     <form action={signOut}>

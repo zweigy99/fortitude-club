@@ -1,10 +1,19 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
+import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 import { redeemOffer } from '@/app/actions/member';
 import Alerts from '@/components/Alerts';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const { data } = await createClient().from('offers').select('title, partners(name)').eq('id', params.id).maybeSingle();
+  if (!data) return { title: 'Offer not found | Fortitude Club' };
+  const partner = (data as any).partners?.name ?? '';
+  return { title: `${data.title} at ${partner} | Fortitude Club`, openGraph: { title: `${data.title} at ${partner}`, description: 'A Fortitude Club member offer.' } };
+}
 
 function stepsOf(text: string | null | undefined) {
   return (text ?? '')
@@ -44,7 +53,7 @@ export default async function OfferPage({
             {offer.description && <p className="lede" style={{ whiteSpace: 'pre-line' }}>{offer.description}</p>}
             <hr className="rule" />
             <div className="stack" style={{ gap: 6 }}>
-              <h3>{p?.name}</h3>
+              <h3>{p?.slug ? <Link href={`/partners/${p.slug}`}>{p?.name}</Link> : p?.name}</h3>
               {p?.neighbourhood && <span className="label-quiet">{p.neighbourhood}</span>}
               {p?.description && <p className="muted">{p.description}</p>}
             </div>
