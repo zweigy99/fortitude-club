@@ -89,3 +89,5 @@
   .partner-map-lg { height: 380px; }
 }
 @media (prefers-reduced-motion: reduce) { .map-item { transition: none; } }
+
+.partner-map .leaflet-tile-pane { filter: grayscale(1) brightness(1.04) contrast(0.92); }
