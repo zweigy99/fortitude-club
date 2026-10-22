@@ -66,3 +66,26 @@
 .partner-map { height: 360px; border: 1px solid var(--line); border-radius: 4px; background: #e9e6df; z-index: 0; }
 .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 .gallery img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; }
+
+/* Map v2 */
+.map-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: stretch; }
+.partner-map-lg { height: 460px; }
+.map-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.map-item { width: 100%; display: flex; gap: 14px; align-items: center; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: 12px 14px; cursor: pointer; font: inherit; color: var(--ink); transition: border-color .15s ease, box-shadow .15s ease; }
+.map-item:hover, .map-item.is-active { border-color: var(--ink); box-shadow: 0 6px 16px -10px rgba(0,0,0,.35); }
+.map-item-logo { flex: 0 0 64px; height: 44px; display: flex; align-items: center; justify-content: center; }
+.map-item-logo img { max-height: 40px; max-width: 64px; width: auto; object-fit: contain; }
+.map-item-initial { width: 40px; height: 40px; border-radius: 50%; background: var(--ink); color: var(--paper); display: flex; align-items: center; justify-content: center; font-weight: 600; }
+.map-item-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.map-item-name { font-weight: 600; font-size: 15px; }
+.map-item-place { font-size: 13px; color: var(--muted); }
+.map-item-offers { font-size: 13px; color: var(--teal-text); font-weight: 600; }
+.fc-pin { display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 4px 8px rgba(0,0,0,.25)); }
+.fc-pin-card { background: #fff; border: 2px solid #141414; border-radius: 999px; padding: 6px 12px; display: flex; align-items: center; justify-content: center; min-height: 36px; }
+.fc-pin-tip { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 10px solid #141414; margin-top: -1px; }
+.leaflet-popup-content-wrapper { border-radius: 4px; }
+@media (max-width: 860px) {
+  .map-wrap { grid-template-columns: 1fr; }
+  .partner-map-lg { height: 380px; }
+}
+@media (prefers-reduced-motion: reduce) { .map-item { transition: none; } }
