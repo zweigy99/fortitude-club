@@ -16,7 +16,7 @@ export default async function PartnersPage() {
             <h1>Premium local wellness.</h1>
             <p className="lede">From fitness studios and recovery clinics to nutrition and mental wellness services, every partner is carefully selected to deliver measurable value.</p>
           </div>
-          <PartnerMap points={partners.filter((p) => p.lat != null && p.lng != null).map((p) => ({ name: p.name, lat: p.lat as number, lng: p.lng as number, href: p.slug ? `/partners/${p.slug}` : '/partners', place: p.neighbourhood ?? '' }))} />
+          <PartnerMap points={partners.filter((p) => p.lat != null && p.lng != null).map((p) => ({ name: p.name, lat: p.lat as number, lng: p.lng as number, href: p.slug ? `/partners/${p.slug}` : '/partners', place: p.neighbourhood ?? '', logo: p.logo_url ?? null, offers: p.offers.length }))} />
           <div>{partners.map((p) => <PartnerBlock key={p.id} partner={p} />)}</div>
         </div>
       </section>
