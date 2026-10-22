@@ -44,10 +44,9 @@ export default function PartnerMap({ points, title = true }: { points: Point[]; 
         if (!ref.current) return;
         map = L.map(ref.current, { scrollWheelZoom: false, zoomControl: true });
         mapRef.current = map;
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
           maxZoom: 19,
-          subdomains: 'abcd',
-          attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+          attribution: '&copy; OpenStreetMap contributors',
         }).addTo(map);
         const bounds: [number, number][] = [];
         markersRef.current = points.map((p, i) => {
