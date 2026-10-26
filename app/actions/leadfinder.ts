@@ -13,11 +13,19 @@ async function runOne(supabase: any, area: string, category: string, skipChains:
   ]);
   const names = new Set([...(leads ?? []), ...(partners ?? [])].map((x: any) => x.name.toLowerCase().trim()));
   const ids = new Set((leads ?? []).map((x: any) => x.google_place_id).filter(Boolean));
+  // Fuzzy match: "STRONG Pilates Liberty Village" = "STRONG Pilates", "Imprint Pilates - Toronto Pilates Studio" = "Imprint Pilates"
+  const core = (s: string) =>
+    s.toLowerCase().split(/\s[-\u2013\u2014|:]\s|,|\(/)[0].replace(/\b(toronto|studios?|downtown|the|inc|ltd)\b/g, ' ').replace(/[^a-z0-9]+/g, ' ').trim();
+  const cores = [...(leads ?? []), ...(partners ?? [])].map((x: any) => core(x.name)).filter((c) => c.length >= 5);
+  const isDup = (name: string) => {
+    const c = core(name);
+    return cores.some((e) => c.startsWith(e) || e.startsWith(c) || (c.length >= 8 && e.includes(c)));
+  };
   let added = 0;
   let skipped = 0;
   for (const p of results) {
     const n = p.name.toLowerCase().trim();
-    if (ids.has(p.id) || names.has(n) || (skipChains && isChain(p.name)) || (p.reviews ?? 0) < minReviews) {
+    if (ids.has(p.id) || names.has(n) || isDup(p.name) || (skipChains && isChain(p.name)) || (p.reviews ?? 0) < minReviews) {
       skipped++;
       continue;
     }
@@ -39,6 +47,7 @@ async function runOne(supabase: any, area: string, category: string, skipChains:
       added++;
       names.add(n);
       ids.add(p.id);
+      if (core(p.name).length >= 5) cores.push(core(p.name));
     }
   }
   return { added, skipped, error };
