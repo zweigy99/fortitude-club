@@ -106,3 +106,32 @@ ${rows ? `<table role="presentation" width="100%" style="border-collapse:collaps
   const text = `Your Fortitude Club report\n${p.partner} · ${p.period}\n\n${p.total} redemptions by ${p.members} members\n${p.byOffer.map((o) => `${o.title}: ${o.n}`).join('\n')}\n`;
   return { to: p.to, subject: `Fortitude Club report: ${p.partner}, ${p.period}`, html, text };
 }
+
+/** Outreach email to a prospective partner, with the business address and unsubscribe link Canada's anti-spam law expects. */
+export async function sendOutreach(p: { fromName: string; fromEmail: string; replyTo: string; to: string; subject: string; body: string; address: string; unsubscribeUrl: string }) {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return { ok: false, error: 'RESEND_API_KEY is not set in Vercel.' };
+  const paras = p.body.split(/\n{2,}/).map((t) => `<p style="margin:0 0 14px">${esc(t).replace(/\n/g, '<br>')}</p>`).join('');
+  const html = `<!doctype html><html><body style="margin:0;padding:24px;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#141414">${paras}
+<p style="margin:28px 0 0;font-size:12px;color:#8a877f">${esc(p.address)} · <a href="${p.unsubscribeUrl}" style="color:#8a877f">Unsubscribe</a> from Fortitude Club partnership emails.</p></body></html>`;
+  const text = `${p.body}\n\n--\n${p.address}\nUnsubscribe: ${p.unsubscribeUrl}\n`;
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: `${p.fromName} <${p.fromEmail}>`,
+        to: [p.to],
+        reply_to: p.replyTo,
+        subject: p.subject,
+        html,
+        text,
+        headers: { 'List-Unsubscribe': `<${p.unsubscribeUrl}>` },
+      }),
+    });
+    if (!res.ok) return { ok: false, error: `Email service error (${res.status}): ${(await res.text()).slice(0, 160)}` };
+    return { ok: true };
+  } catch (e: any) {
+    return { ok: false, error: String(e?.message ?? e) };
+  }
+}
