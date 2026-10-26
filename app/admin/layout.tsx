@@ -16,6 +16,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/employers" className="chip">Employers</Link>
         <Link href="/employer" className="chip">Employer dashboards</Link>
         <Link href="/admin/announcements" className="chip">Member emails</Link>
+        <Link href="/admin/linkedin" className="chip">LinkedIn posts</Link>
         <Link href="/admin/reports" className="chip">Partner reports</Link>
         <Link href="/admin/site" className="chip">Site content</Link>
       </nav>

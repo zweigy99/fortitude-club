@@ -32,7 +32,7 @@ export default async function AdminLeads({ searchParams }: { searchParams: { sta
           <h1 style={{ fontSize: 56 }}>Partner leads</h1>
           <p className="muted">Every studio you could bring on, where it stands, and who&apos;s due a follow-up.</p>
         </div>
-        <Link href="/admin/leads/templates" className="btn btn-ghost">Email templates &amp; sender</Link>
+        <div className="row"><Link href="/admin/leads/find" className="btn btn-primary">Find new studios</Link><Link href="/admin/leads/templates" className="btn btn-ghost">Email templates &amp; sender</Link></div>
       </div>
       <Alerts error={searchParams.error} />
 
