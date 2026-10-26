@@ -3,12 +3,18 @@ import { notFound } from 'next/navigation';
 import { requireAdmin } from '@/lib/auth';
 import { updatePartner } from '@/app/actions/admin';
 import { PartnerFields } from '@/components/AdminForms';
+import { invitePartnerUser, removePartnerUser } from '@/app/actions/requests';
 import Alerts from '@/components/Alerts';
 
 export default async function EditPartner({ params, searchParams }: { params: { id: string }; searchParams: { error?: string; saved?: string } }) {
   const { supabase } = await requireAdmin();
   const { data: partner } = await supabase.from('partners').select('*').eq('id', params.id).maybeSingle();
   if (!partner) notFound();
+  const [{ data: invites }, { data: staff }] = await Promise.all([
+    supabase.from('partner_invites').select('email, created_at').eq('partner_id', partner.id),
+    supabase.from('profiles').select('full_name, work_email').eq('partner_id', partner.id).eq('role', 'partner'),
+  ]);
+  const activeEmails = new Set((staff ?? []).map((x: any) => x.work_email));
 
   return (
     <div className="stack-lg" style={{ maxWidth: 900 }}>
@@ -20,6 +26,40 @@ export default async function EditPartner({ params, searchParams }: { params: { 
         <PartnerFields partner={partner} />
         <div><button className="btn btn-primary" type="submit">Save partner</button></div>
       </form>
+
+      <div className="panel stack" id="logins">
+        <h2 style={{ fontSize: 28 }}>Partner portal logins</h2>
+        <p className="muted small">People here can sign in to the partner portal to update {partner.name}&apos;s page, upload photos, see their results and suggest offer changes (which you approve in Partner requests).</p>
+        <div className="table-wrap">
+          <table>
+            <thead><tr><th>Email</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              {(invites ?? []).map((i: any) => (
+                <tr key={i.email}>
+                  <td>{i.email}</td>
+                  <td>{activeEmails.has(i.email) ? <span className="badge badge-ok">Active</span> : <span className="badge badge-warn">Invited</span>}</td>
+                  <td>
+                    <form action={removePartnerUser}>
+                      <input type="hidden" name="partner_id" value={partner.id} />
+                      <input type="hidden" name="email" value={i.email} />
+                      <button className="linkbtn small" type="submit">Remove access</button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+              {(invites ?? []).length === 0 && <tr><td colSpan={3} className="muted">No one yet.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+        <form action={invitePartnerUser} className="row" style={{ alignItems: 'flex-end' }}>
+          <input type="hidden" name="partner_id" value={partner.id} />
+          <div className="field" style={{ flex: 1, minWidth: 240 }}>
+            <label htmlFor="inv">Invite by email</label>
+            <input id="inv" name="email" type="email" defaultValue={partner.contact_email ?? ''} placeholder="owner@studio.com" required />
+          </div>
+          <button className="btn btn-primary" type="submit">Send invite</button>
+        </form>
+      </div>
     </div>
   );
 }

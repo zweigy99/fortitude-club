@@ -11,6 +11,7 @@ export const metadata = { title: 'My membership card | Fortitude Club' };
 export default async function CardPage({ searchParams }: { searchParams: { notice?: string } }) {
   const { supabase, user, profile } = await getSession();
   if (!user) redirect('/login?next=/card');
+  if (profile?.role === 'partner') redirect('/partner');
   if (!profile) {
     return (
       <section className="section">

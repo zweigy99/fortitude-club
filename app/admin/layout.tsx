@@ -13,6 +13,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/leads" className="chip">Partner leads</Link>
         <Link href="/admin/redemptions" className="chip">Redemptions</Link>
         <Link href="/admin/offers" className="chip">Offers and partners</Link>
+        <Link href="/admin/requests" className="chip">Partner requests</Link>
         <Link href="/admin/employers" className="chip">Employers</Link>
         <Link href="/employer" className="chip">Employer dashboards</Link>
         <Link href="/admin/announcements" className="chip">Member emails</Link>

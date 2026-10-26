@@ -135,3 +135,11 @@ export async function sendOutreach(p: { fromName: string; fromEmail: string; rep
     return { ok: false, error: String(e?.message ?? e) };
   }
 }
+
+export async function sendSimple(to: string, subject: string, heading: string, lines: string[], cta?: { label: string; url: string }) {
+  const html = layout(`<h1 style="font-size:24px;font-weight:300;margin:0 0 14px">${esc(heading)}</h1>${lines
+    .map((l) => `<p style="margin:0 0 12px">${esc(l)}</p>`)
+    .join('')}${cta ? `<p style="margin:16px 0 0"><a href="${cta.url}" style="display:inline-block;background:#141414;color:#f8f6f1;text-decoration:none;padding:12px 20px;font-size:15px">${esc(cta.label)}</a></p>` : ''}`);
+  const text = `${heading}\n\n${lines.join('\n\n')}${cta ? `\n\n${cta.label}: ${cta.url}` : ''}\n`;
+  return send(to, subject, html, text);
+}

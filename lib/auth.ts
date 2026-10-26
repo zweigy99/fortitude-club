@@ -7,7 +7,8 @@ export type Profile = {
   work_email: string;
   employer_id: string | null;
   status: 'pending' | 'approved' | 'rejected';
-  role: 'member' | 'admin' | 'employer';
+  role: 'member' | 'admin' | 'employer' | 'partner';
+  partner_id?: string | null;
   member_number: number;
   created_at: string;
   reviewed_at: string | null;

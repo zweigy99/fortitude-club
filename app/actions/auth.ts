@@ -12,11 +12,12 @@ export async function signUp(formData: FormData) {
   const fullName = String(formData.get('full_name') || '').trim();
   const email = String(formData.get('email') || '').trim().toLowerCase();
   const employerId = String(formData.get('employer_id') || '');
+  const isPartner = formData.get('type') === 'partner';
   const password = String(formData.get('password') || '');
 
   if (!fullName) back('/signup', 'Enter your full name.');
   if (!email.includes('@')) back('/signup', 'Enter your work email address.');
-  if (!employerId) back('/signup', 'Choose your employer.');
+  if (!employerId && !isPartner) back('/signup', 'Choose your employer.');
   if (password.length < 8) back('/signup', 'Use a password with at least 8 characters.');
 
   const supabase = createClient();
@@ -24,7 +25,7 @@ export async function signUp(formData: FormData) {
     email,
     password,
     options: {
-      data: { full_name: fullName, employer_id: employerId },
+      data: { full_name: fullName, employer_id: isPartner ? '' : employerId },
       emailRedirectTo: `${siteUrl()}/auth/callback?next=/card`,
     },
   });

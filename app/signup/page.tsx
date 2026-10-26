@@ -7,7 +7,7 @@ import Alerts from '@/components/Alerts';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Join | Fortitude Club' };
 
-export default async function SignUpPage({ searchParams }: { searchParams: { error?: string; sent?: string; email?: string; resent?: string } }) {
+export default async function SignUpPage({ searchParams }: { searchParams: { error?: string; sent?: string; email?: string; resent?: string; type?: string } }) {
   const { supabase, user } = await getSession();
   if (user) redirect('/card');
 
@@ -39,8 +39,8 @@ export default async function SignUpPage({ searchParams }: { searchParams: { err
     <section className="section">
       <div className="wrap narrow stack-lg">
         <div className="stack">
-          <h1 style={{ fontSize: 56 }}>Join Fortitude Club</h1>
-          <p className="muted">Use your work email. We verify every member with their employer.</p>
+          <h1 style={{ fontSize: 56 }}>{searchParams.type === 'partner' ? 'Partner portal sign-up' : 'Join Fortitude Club'}</h1>
+          <p className="muted">{searchParams.type === 'partner' ? 'Use the email address Fortitude Club invited. Your studio is linked automatically once you confirm it.' : 'Use your work email. We verify every member with their employer.'}</p>
         </div>
         <Alerts error={searchParams.error} />
         <form action={signUp} className="form">
@@ -50,16 +50,20 @@ export default async function SignUpPage({ searchParams }: { searchParams: { err
           </div>
           <div className="field">
             <label htmlFor="email">Work email</label>
-            <input id="email" name="email" type="email" autoComplete="email" required />
+            <input id="email" name="email" type="email" autoComplete="email" required defaultValue={searchParams.type === 'partner' ? searchParams.email ?? '' : undefined} />
           </div>
+          {searchParams.type === 'partner' ? (
+            <input type="hidden" name="type" value="partner" />
+          ) : (
           <div className="field">
             <label htmlFor="employer_id">Employer</label>
             <select id="employer_id" name="employer_id" required defaultValue="">
               <option value="" disabled>Choose your employer</option>
               {(employers ?? []).map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
             </select>
-            <span className="hint">Not listed? Ask your HR team to <Link href="/employers">contact us</Link>.</span>
+            <span className="hint">Not listed? Ask your HR team to <Link href="/employers">contact us</Link>. Studio partner? <Link href="/signup?type=partner">Use the partner sign-up</Link>.</span>
           </div>
+          )}
           <div className="field">
             <label htmlFor="password">Password</label>
             <input id="password" name="password" type="password" autoComplete="new-password" minLength={8} required />

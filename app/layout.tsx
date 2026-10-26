@@ -58,6 +58,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Link href="/contact">Contact</Link>
               {profile?.role === 'admin' && <Link href="/admin">Admin</Link>}
               {profile?.role === 'employer' && <Link href="/employer">Team dashboard</Link>}
+              {profile?.role === 'partner' && <Link href="/partner">Partner portal</Link>}
               {user ? (
                 <>
                   <form action={signOut} style={{ display: 'inline' }}>
@@ -81,6 +82,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Link href="/contact">Contact</Link>
                 {profile?.role === 'admin' && <Link href="/admin">Admin</Link>}
                 {profile?.role === 'employer' && <Link href="/employer">Team dashboard</Link>}
+                {profile?.role === 'partner' && <Link href="/partner">Partner portal</Link>}
                 {user ? (
                   <>
                     <form action={signOut}>
