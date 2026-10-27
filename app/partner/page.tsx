@@ -9,16 +9,18 @@ export const metadata = { title: 'Partner portal | Fortitude Club' };
 
 const ACTION_LABEL: Record<string, string> = { edit: 'Edit', new: 'New offer', pause: 'Pause', resume: 'Turn back on' };
 
-export default async function PartnerPortal({ searchParams }: { searchParams: { saved?: string; requested?: string; error?: string } }) {
+export default async function PartnerPortal({ searchParams }: { searchParams: { saved?: string; requested?: string; error?: string; as?: string } }) {
   const { supabase, user, profile } = await getSession();
   if (!user) redirect('/login?next=/partner');
-  if (profile?.role !== 'partner' || !profile.partner_id) redirect('/card');
-  const pid = profile.partner_id;
+  const isAdmin = profile?.role === 'admin';
+  const previewId = isAdmin ? searchParams.as : undefined;
+  if (!previewId && (profile?.role !== 'partner' || !profile?.partner_id)) redirect(isAdmin ? '/admin/offers' : '/card');
+  const pid = (previewId ?? profile!.partner_id) as string;
   const [{ data: p }, { data: offers }, { data: requests }, { data: stats }] = await Promise.all([
     supabase.from('partners').select('*').eq('id', pid).maybeSingle(),
     supabase.from('offers').select('*').eq('partner_id', pid).order('sort_order'),
     supabase.from('offer_requests').select('*, offers(title)').eq('partner_id', pid).order('created_at', { ascending: false }).limit(20),
-    supabase.rpc('partner_stats'),
+    supabase.rpc('partner_stats', { p_partner: pid }),
   ]);
   if (!p) redirect('/card');
   const s: any = stats ?? {};
@@ -38,10 +40,15 @@ export default async function PartnerPortal({ searchParams }: { searchParams: { 
             ) : (
               <h1 style={{ fontSize: 'clamp(36px, 5vw, 56px)' }}>{p.name}</h1>
             )}
-            <p className="muted">Hi {(profile.full_name || '').split(' ')[0] || 'there'}. Manage how {p.name} appears on Fortitude Club.</p>
+            <p className="muted">Hi {previewId ? p.name : (profile!.full_name || '').split(' ')[0] || 'there'}. Manage how {p.name} appears on Fortitude Club.</p>
           </div>
           {p.slug && <Link href={`/partners/${p.slug}`} className="btn btn-ghost" target="_blank">View my public page</Link>}
         </div>
+        {previewId && (
+          <div className="alert alert-ok" role="status">
+            <strong>Admin preview.</strong> This is exactly what {p.name}&apos;s partner logins see. Buttons are switched off here; to change details or offers, use <Link href={`/admin/partners/${pid}`}>Edit partner</Link> or <Link href="/admin/requests">Partner requests</Link>.
+          </div>
+        )}
         <Alerts
           error={searchParams.error}
           notice={searchParams.saved ? 'Saved. Your changes are live on fortitudeclub.ca.' : searchParams.requested ? 'Request sent. The Fortitude team will review it and email you when it\u2019s decided.' : undefined}
@@ -91,9 +98,11 @@ export default async function PartnerPortal({ searchParams }: { searchParams: { 
                         <div className="row" style={{ gap: 8 }}>
                           <Link href={`/partner/request?offer=${o.id}`} className="btn btn-ghost btn-small">Suggest edits</Link>
                           <form action={submitOfferRequest}>
+                            <fieldset disabled={!!previewId} style={{ border: 0, padding: 0, margin: 0 }}>
                             <input type="hidden" name="offer_id" value={o.id} />
                             <input type="hidden" name="action" value={o.active ? 'pause' : 'resume'} />
                             <button className="linkbtn small" type="submit">{o.active ? 'Request pause' : 'Request turn on'}</button>
+                            </fieldset>
                           </form>
                         </div>
                       </td>
@@ -126,6 +135,7 @@ export default async function PartnerPortal({ searchParams }: { searchParams: { 
         </div>
 
         <form action={updateDetails} className="panel form" id="details" encType="multipart/form-data">
+          <fieldset disabled={!!previewId} style={{ border: 0, padding: 0, margin: 0, display: 'contents' }}>
           <h2 style={{ fontSize: 32 }}>Your studio page</h2>
           <p className="muted small">These details go live as soon as you save.</p>
           <div className="field"><label htmlFor="d-desc">Description</label><textarea id="d-desc" name="description" defaultValue={p.description ?? ''} style={{ minHeight: 110 }} /></div>
@@ -166,6 +176,7 @@ export default async function PartnerPortal({ searchParams }: { searchParams: { 
           )}
           {photos.length === 0 && <input type="hidden" name="photos" value="" />}
           <div><button className="btn btn-primary" type="submit">Save studio page</button></div>
+          </fieldset>
         </form>
       </div>
     </section>
