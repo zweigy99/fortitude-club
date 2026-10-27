@@ -19,7 +19,13 @@ export default async function EditPartner({ params, searchParams }: { params: { 
   return (
     <div className="stack-lg" style={{ maxWidth: 900 }}>
       <Link href="/admin/offers" className="small">Back to offers and partners</Link>
-      <h1 style={{ fontSize: 48 }}>{partner.name}</h1>
+      <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <h1 style={{ fontSize: 48 }}>{partner.name}</h1>
+        <div className="row">
+          <Link href={`/partner?as=${partner.id}`} className="btn btn-primary">View as partner</Link>
+          <a href="#logins" className="btn btn-ghost">Partner logins &amp; invites</a>
+        </div>
+      </div>
       <Alerts error={searchParams.error} notice={searchParams.saved ? 'Partner saved.' : undefined} />
       <form action={updatePartner} className="panel form">
         <input type="hidden" name="id" value={partner.id} />
