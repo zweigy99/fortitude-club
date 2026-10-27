@@ -8,6 +8,7 @@ import mark from '@/components/fc-mark.png';
 import markWhite from '@/components/fc-mark-white.png';
 import InstallPrompt from '@/components/InstallPrompt';
 import { signOut } from '@/app/actions/auth';
+import HelpBot from '@/components/HelpBot';
 
 export const metadata: Metadata = {
   title: 'Fortitude Club | Better benefits. Healthier teams.',
@@ -102,6 +103,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </header>
         <main>{children}</main>
         {user && <InstallPrompt />}
+        <HelpBot />
         <footer className="site-footer">
           <div className="wrap footer-inner">
             <div className="brand" style={{ color: 'var(--paper)' }}>
