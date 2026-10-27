@@ -63,6 +63,10 @@ export default async function EditPartner({ params, searchParams }: { params: { 
             <label htmlFor="inv">Invite by email</label>
             <input id="inv" name="email" type="email" defaultValue={partner.contact_email ?? ''} placeholder="owner@studio.com" required />
           </div>
+          <div className="field" style={{ flexBasis: '100%' }}>
+            <label htmlFor="inv-note">Personal note (optional, added to the invite email)</label>
+            <textarea id="inv-note" name="note" placeholder="e.g. Hi Ashley, great working with you..." style={{ minHeight: 90 }} />
+          </div>
           <button className="btn btn-primary" type="submit">Send invite</button>
         </form>
       </div>
