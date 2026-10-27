@@ -62,12 +62,14 @@ export async function invitePartnerUser(formData: FormData) {
   const { data: existing } = await supabase.from('profiles').select('id').eq('work_email', email).maybeSingle();
   if (existing) await supabase.from('profiles').update({ role: 'partner', partner_id: partnerId, status: 'approved' }).eq('id', existing.id);
   const { data: partner } = await supabase.from('partners').select('name').eq('id', partnerId).maybeSingle();
+  const personal = String(formData.get('note') || '').trim();
   await sendSimple(
     email,
     `Your ${partner?.name ?? ''} partner portal on Fortitude Club`,
     'You\u2019re invited to the Fortitude Club partner portal',
     [
       `You can now manage ${partner?.name ?? 'your studio'} on fortitudeclub.ca: update your description, hours, photos and logo, see how many members redeem with you, and suggest offer changes.`,
+      ...(personal ? personal.split(/\n{2,}|\n/).map((x) => x.trim()).filter(Boolean) : []),
       existing ? 'Your existing login now opens the partner portal.' : 'Create your login with this email address using the button below, then confirm your email.',
     ],
     { label: existing ? 'Open the partner portal' : 'Create my partner login', url: existing ? `${siteUrl()}/partner` : `${siteUrl()}/signup?type=partner&email=${encodeURIComponent(email)}` }
