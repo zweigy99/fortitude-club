@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 import { updateDetails, submitOfferRequest, switchStudio } from '@/app/actions/partner';
 import Alerts from '@/components/Alerts';
+import PartnerMediaUploader from '@/components/PartnerMediaUploader';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Partner portal | Fortitude Club' };
@@ -156,7 +157,7 @@ export default async function PartnerPortal({ searchParams }: { searchParams: { 
           )}
         </div>
 
-        <form action={updateDetails} className="panel form" id="details" encType="multipart/form-data">
+        <form action={updateDetails} className="panel form" id="details">
           <fieldset disabled={!!previewId} style={{ border: 0, padding: 0, margin: 0, display: 'contents' }}>
           <h2 style={{ fontSize: 32 }}>Your studio page</h2>
           <p className="muted small">These details go live as soon as you save.</p>
@@ -170,33 +171,7 @@ export default async function PartnerPortal({ searchParams }: { searchParams: { 
             <div className="field"><label htmlFor="d-email">Contact email (for monthly reports)</label><input id="d-email" name="contact_email" type="email" defaultValue={p.contact_email ?? ''} /></div>
           </div>
           <div className="field"><label htmlFor="d-hours">Hours (one line per day or range)</label><textarea id="d-hours" name="hours" defaultValue={p.hours ?? ''} placeholder={'Mon \u2013 Fri 6am \u2013 9pm\nSat \u2013 Sun 8am \u2013 6pm'} style={{ minHeight: 90 }} /></div>
-          <div className="split" style={{ gap: 16, alignItems: 'start' }}>
-            <div className="field">
-              <label htmlFor="d-logo">Logo</label>
-              {p.logo_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={p.logo_url} alt="Current logo" style={{ height: 48, width: 'auto', maxWidth: 200, objectFit: 'contain', background: '#fff', padding: 6, border: '1px solid var(--line)', marginBottom: 8 }} />
-              )}
-              <input id="d-logo" name="logo_file" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
-              <span className="hint">PNG or SVG on a white or transparent background works best. Max 5 MB.</span>
-            </div>
-            <div className="field">
-              <label htmlFor="d-photos-up">Add photos</label>
-              <input id="d-photos-up" name="photo_files" type="file" multiple accept="image/png,image/jpeg,image/webp" />
-              <span className="hint">Landscape photos of your space look best. Up to 12 in total.</span>
-            </div>
-          </div>
-          {photos.length > 0 && (
-            <div className="field">
-              <label htmlFor="d-photos">Current photos (delete a line to remove a photo)</label>
-              <div className="gallery" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))' }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                {photos.map((src, i) => <img key={i} src={src} alt={`Photo ${i + 1}`} />)}
-              </div>
-              <textarea id="d-photos" name="photos" defaultValue={photos.join('\n')} style={{ minHeight: 70, fontSize: 12 }} />
-            </div>
-          )}
-          {photos.length === 0 && <input type="hidden" name="photos" value="" />}
+          <PartnerMediaUploader partnerId={pid} initialLogo={p.logo_url ?? ''} initialPhotos={photos} disabled={!!previewId} />
           <div><button className="btn btn-primary" type="submit">Save studio page</button></div>
           </fieldset>
         </form>
