@@ -58,9 +58,15 @@ export async function invitePartnerUser(formData: FormData) {
   const email = String(formData.get('email') || '').trim().toLowerCase();
   if (!email.includes('@')) redirect(`/admin/partners/${partnerId}?error=` + encodeURIComponent('Enter an email address.'));
   await supabase.from('partner_invites').upsert({ email, partner_id: partnerId });
-  // If they already have an account, link it now
-  const { data: existing } = await supabase.from('profiles').select('id').eq('work_email', email).maybeSingle();
-  if (existing) await supabase.from('profiles').update({ role: 'partner', partner_id: partnerId, status: 'approved' }).eq('id', existing.id);
+  // If they already have an account, link it now (keeps any other studios they manage)
+  const { data: existing } = await supabase.from('profiles').select('id, role, partner_id').eq('work_email', email).maybeSingle();
+  if (existing) {
+    await supabase.from('partner_members').upsert({ user_id: existing.id, partner_id: partnerId });
+    await supabase
+      .from('profiles')
+      .update({ role: existing.role === 'admin' ? 'admin' : 'partner', partner_id: existing.partner_id ?? partnerId, status: 'approved' })
+      .eq('id', existing.id);
+  }
   const { data: partner } = await supabase.from('partners').select('name').eq('id', partnerId).maybeSingle();
   const personal = String(formData.get('note') || '').trim();
   await sendSimple(
@@ -81,7 +87,16 @@ export async function removePartnerUser(formData: FormData) {
   const { supabase } = await requireAdmin();
   const partnerId = String(formData.get('partner_id'));
   const email = String(formData.get('email') || '').toLowerCase();
-  await supabase.from('partner_invites').delete().eq('email', email);
-  await supabase.from('profiles').update({ role: 'member', partner_id: null }).eq('work_email', email).eq('role', 'partner');
+  await supabase.from('partner_invites').delete().eq('email', email).eq('partner_id', partnerId);
+  const { data: prof } = await supabase.from('profiles').select('id, role, partner_id').eq('work_email', email).maybeSingle();
+  if (prof) {
+    await supabase.from('partner_members').delete().eq('user_id', prof.id).eq('partner_id', partnerId);
+    const { data: left } = await supabase.from('partner_members').select('partner_id').eq('user_id', prof.id).limit(1);
+    if (prof.role === 'partner' && (!left || left.length === 0)) {
+      await supabase.from('profiles').update({ role: 'member', partner_id: null }).eq('id', prof.id);
+    } else if (prof.partner_id === partnerId && left && left.length) {
+      await supabase.from('profiles').update({ partner_id: left[0].partner_id }).eq('id', prof.id);
+    }
+  }
   redirect(`/admin/partners/${partnerId}?saved=1#logins`);
 }

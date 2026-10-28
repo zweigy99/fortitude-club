@@ -86,3 +86,11 @@ export async function submitOfferRequest(formData: FormData) {
   );
   redirect('/partner?requested=1#offers');
 }
+
+export async function switchStudio(formData: FormData) {
+  const { supabase } = await requirePartner();
+  const id = String(formData.get('partner_id') || '');
+  const { error } = await supabase.rpc('switch_partner', { p: id });
+  if (error) redirect('/partner?error=' + encodeURIComponent('You don\u2019t have access to that studio.'));
+  redirect('/partner');
+}
