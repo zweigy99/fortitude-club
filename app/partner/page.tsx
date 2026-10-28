@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
-import { updateDetails, submitOfferRequest } from '@/app/actions/partner';
+import { updateDetails, submitOfferRequest, switchStudio } from '@/app/actions/partner';
 import Alerts from '@/components/Alerts';
 
 export const dynamic = 'force-dynamic';
@@ -23,6 +23,10 @@ export default async function PartnerPortal({ searchParams }: { searchParams: { 
     supabase.rpc('partner_stats', { p_partner: pid }),
   ]);
   if (!p) redirect('/card');
+  const { data: memberships } = previewId
+    ? { data: [] as any[] }
+    : await supabase.from('partner_members').select('partner_id, partners(name)').eq('user_id', user.id);
+  const studios = ((memberships ?? []) as any[]).map((m) => ({ id: m.partner_id, name: m.partners?.name ?? 'Studio' })).sort((a, b) => a.name.localeCompare(b.name));
   const s: any = stats ?? {};
   const max = Math.max(1, ...((s.by_month ?? []) as any[]).map((m: any) => m.n));
   const pending = (requests ?? []).filter((r: any) => r.status === 'pending');
@@ -44,6 +48,24 @@ export default async function PartnerPortal({ searchParams }: { searchParams: { 
           </div>
           {p.slug && <Link href={`/partners/${p.slug}`} className="btn btn-ghost" target="_blank">View my public page</Link>}
         </div>
+        {studios.length > 1 && (
+          <form action={switchStudio} className="panel row" style={{ alignItems: 'center', gap: 12, padding: '14px 18px' }}>
+            <span className="label-quiet">Your studios</span>
+            {studios.map((st) => (
+              <button
+                key={st.id}
+                type="submit"
+                name="partner_id"
+                value={st.id}
+                className={st.id === pid ? 'btn btn-primary btn-small' : 'btn btn-ghost btn-small'}
+                aria-current={st.id === pid ? 'true' : undefined}
+              >
+                {st.name}
+              </button>
+            ))}
+            <span className="small muted">You&apos;re managing <b>{p.name}</b>. Click another studio to switch.</span>
+          </form>
+        )}
         {previewId && (
           <div className="alert alert-ok" role="status">
             <strong>Admin preview.</strong> This is exactly what {p.name}&apos;s partner logins see. Buttons are switched off here; to change details or offers, use <Link href={`/admin/partners/${pid}`}>Edit partner</Link> or <Link href="/admin/requests">Partner requests</Link>.
