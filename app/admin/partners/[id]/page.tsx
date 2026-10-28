@@ -12,9 +12,9 @@ export default async function EditPartner({ params, searchParams }: { params: { 
   if (!partner) notFound();
   const [{ data: invites }, { data: staff }] = await Promise.all([
     supabase.from('partner_invites').select('email, created_at').eq('partner_id', partner.id),
-    supabase.from('profiles').select('full_name, work_email').eq('partner_id', partner.id).eq('role', 'partner'),
+    supabase.from('partner_members').select('profiles(full_name, work_email)').eq('partner_id', partner.id),
   ]);
-  const activeEmails = new Set((staff ?? []).map((x: any) => x.work_email));
+  const activeEmails = new Set((staff ?? []).map((x: any) => x.profiles?.work_email).filter(Boolean));
 
   return (
     <div className="stack-lg" style={{ maxWidth: 900 }}>
