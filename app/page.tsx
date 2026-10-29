@@ -142,7 +142,7 @@ export default async function Home() {
               <span className="step-n">4</span>
               <div className="stack" style={{ gap: 4 }}>
                 <h3>Keep exploring</h3>
-                <p>New partners join through the pilot. See who's participating on the partners page.</p>
+                <p>We're adding new partners all the time. See who's participating on the partners page.</p>
               </div>
             </div>
           </div>
@@ -171,7 +171,7 @@ export default async function Home() {
           <span className="label-quiet">A few things to know</span>
           <div className="split" style={{ gap: 20 }}>
             <p>Bring your membership card to every visit and follow the partner's own booking or redemption instructions.</p>
-            <p>Through the pilot we'll host employee-only moments: partner-led lunch &amp; learns and open studio sessions.</p>
+            <p>We also host employee-only moments: partner-led lunch &amp; learns and open studio sessions.</p>
           </div>
         </div>
       </section>
