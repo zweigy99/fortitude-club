@@ -121,8 +121,8 @@ export default async function CardPage({ searchParams }: { searchParams: { notic
         ) : profile.status === 'pending' ? (
           <div className="panel stack">
             <span className="badge badge-warn" style={{ alignSelf: 'flex-start' }}>Verification in progress</span>
-            <h1 style={{ fontSize: 52 }}>We're verifying your membership</h1>
-            <p>Our team is confirming <strong>{profile.work_email}</strong> with {profile.employers?.name ?? 'your employer'}. Your card appears here as soon as you are approved.</p>
+            <h1 style={{ fontSize: 52 }}>Thanks for signing up!</h1>
+            <p>Our team is confirming <strong>{profile.work_email}</strong> with {profile.employers?.name ?? 'your employer'}, usually within one business day. We&apos;ll email you as soon as your card is active, and it will appear right here.</p>
             <div><Link href="/offers" className="btn btn-ghost">Browse offers while you wait</Link></div>
           </div>
         ) : (
