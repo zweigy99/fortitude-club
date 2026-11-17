@@ -1,5 +1,7 @@
 'use server';
 
+import { sendSimple } from '@/lib/email';
+
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { safeNext, siteUrl } from '@/lib/auth';
@@ -21,7 +23,7 @@ export async function signUp(formData: FormData) {
   if (password.length < 8) back('/signup', 'Use a password with at least 8 characters.');
 
   const supabase = createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -30,6 +32,18 @@ export async function signUp(formData: FormData) {
     },
   });
   if (error) back('/signup', error.message);
+
+  // Email confirmation is off: the member is signed in straight away and waits for admin approval.
+  if (data.session) {
+    await sendSimple(
+      'info@fortitudeclub.ca',
+      `New sign-up waiting for approval: ${fullName}`,
+      'A new member is waiting for approval',
+      [`${fullName} (${email}) just signed up${isPartner ? ' using the partner sign-up' : ''}.`, 'Approve or reject them in Admin \u2192 Members. Partners: link them from their studio\u2019s Partner logins section.'],
+      { label: 'Open Admin', url: `${siteUrl()}/admin` }
+    ).catch(() => null);
+    redirect('/card?welcome=1');
+  }
 
   redirect(`/signup?sent=1&email=${encodeURIComponent(email)}`);
 }
