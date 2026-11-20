@@ -55,9 +55,15 @@ export default async function PartnerPage({ params }: { params: { slug: string }
           <div className="panel stack" style={{ gap: 14 }}>
             {p.address && (<div className="stack" style={{ gap: 4 }}><span className="label-quiet">Address</span><p>{p.address}</p></div>)}
             {hours.length > 0 && (<div className="stack" style={{ gap: 4 }}><span className="label-quiet">Hours</span>{hours.map((h, i) => <p key={i}>{h}</p>)}</div>)}
-            {p.lat != null && p.lng != null && (
-              <PartnerMap points={[{ name: p.name, lat: p.lat, lng: p.lng, href: `/partners/${p.slug}`, place: p.neighbourhood ?? '' }]} />
-            )}
+            {(() => {
+              const locs = ((p.locations ?? []) as any[]).filter((l) => l && l.lat != null && l.lng != null);
+              const pts = locs.length
+                ? locs.map((l) => ({ name: l.label ? `${p.name} \u00b7 ${l.label}` : p.name, lat: Number(l.lat), lng: Number(l.lng), href: `/partners/${p.slug}`, place: l.address ?? '' }))
+                : p.lat != null && p.lng != null
+                  ? [{ name: p.name, lat: p.lat, lng: p.lng, href: `/partners/${p.slug}`, place: p.neighbourhood ?? '' }]
+                  : [];
+              return pts.length ? <PartnerMap points={pts} list={false} /> : null;
+            })()}
           </div>
         </div>
 
