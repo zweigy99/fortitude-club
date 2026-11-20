@@ -30,7 +30,7 @@ function load(): Promise<any> {
 
 const safe = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
 
-export default function PartnerMap({ points, title = true }: { points: Point[]; title?: boolean }) {
+export default function PartnerMap({ points, title = true, list = true }: { points: Point[]; title?: boolean; list?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -91,7 +91,7 @@ export default function PartnerMap({ points, title = true }: { points: Point[]; 
 
   if (!points.length) return null;
 
-  if (points.length === 1) return <div ref={ref} className="partner-map" role="region" aria-label={`Map showing ${points[0].name}`} />;
+  if (points.length === 1 || !list) return <div ref={ref} className="partner-map" role="region" aria-label={`Map showing ${points.map((x) => x.name).join(', ')}`} />;
 
   return (
     <div className="stack" style={{ gap: 16 }}>
