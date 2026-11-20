@@ -16,7 +16,14 @@ export default async function PartnersPage() {
             <h1>Premium local wellness.</h1>
             <p className="lede">From fitness studios and recovery clinics to nutrition and mental wellness services, every partner is carefully selected to deliver measurable value.</p>
           </div>
-          <PartnerMap points={partners.filter((p) => p.lat != null && p.lng != null).map((p) => ({ name: p.name, lat: p.lat as number, lng: p.lng as number, href: p.slug ? `/partners/${p.slug}` : '/partners', place: p.neighbourhood ?? '', logo: p.logo_url ?? null, offers: p.offers.length }))} />
+          <PartnerMap
+            points={partners.flatMap((p) => {
+              const base = { href: p.slug ? `/partners/${p.slug}` : '/partners', logo: p.logo_url ?? null, offers: p.offers.length };
+              const locs = (((p as any).locations ?? []) as any[]).filter((l) => l && l.lat != null && l.lng != null);
+              if (locs.length) return locs.map((l) => ({ ...base, name: l.label ? `${p.name} \u00b7 ${l.label}` : p.name, lat: Number(l.lat), lng: Number(l.lng), place: l.address ?? p.neighbourhood ?? '' }));
+              return p.lat != null && p.lng != null ? [{ ...base, name: p.name, lat: p.lat as number, lng: p.lng as number, place: p.neighbourhood ?? '' }] : [];
+            })}
+          />
           <div>{partners.map((p) => <PartnerBlock key={p.id} partner={p} />)}</div>
         </div>
       </section>
