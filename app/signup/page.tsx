@@ -55,14 +55,22 @@ export default async function SignUpPage({ searchParams }: { searchParams: { err
           {searchParams.type === 'partner' ? (
             <input type="hidden" name="type" value="partner" />
           ) : (
+          <>
           <div className="field">
             <label htmlFor="employer_id">Employer</label>
             <select id="employer_id" name="employer_id" required defaultValue="">
               <option value="" disabled>Choose your employer</option>
               {(employers ?? []).map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
+              <option value="other">Other (company not listed)</option>
             </select>
-            <span className="hint">Not listed? Ask your HR team to <Link href="/employers">contact us</Link>. Studio partner? <Link href="/signup?type=partner">Use the partner sign-up</Link>.</span>
+            <span className="hint">Not listed? Choose <b>Other</b> and tell us where you work below. Studio partner? <Link href="/signup?type=partner">Use the partner sign-up</Link>.</span>
           </div>
+          <div className="field">
+            <label htmlFor="company_other">Company name (if you chose Other)</label>
+            <input id="company_other" name="company_other" autoComplete="organization" placeholder="e.g. Acme Inc." />
+            <span className="hint">Members from other companies are approved by the Fortitude team, usually within one business day.</span>
+          </div>
+          </>
           )}
           <div className="field">
             <label htmlFor="password">Password</label>
