@@ -100,6 +100,6 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
         <div style={{ position: 'absolute', left: 0, bottom: 0, width: '100%', height: 8, display: 'flex', background: TEAL }} />
       </div>
     ),
-    { width: 1200, height: 627, fonts: fonts.length ? fonts : undefined }
+    { width: 1200, height: 627, fonts: fonts.length ? fonts : undefined, headers: { 'Cache-Control': 'no-store, max-age=0' } }
   );
 }
