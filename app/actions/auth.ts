@@ -15,11 +15,13 @@ export async function signUp(formData: FormData) {
   const email = String(formData.get('email') || '').trim().toLowerCase();
   const employerId = String(formData.get('employer_id') || '');
   const isPartner = formData.get('type') === 'partner';
+  const isOther = employerId === 'other';
+  const companyOther = String(formData.get('company_other') || '').trim().slice(0, 120);
   const password = String(formData.get('password') || '');
 
   if (!fullName) back('/signup', 'Enter your full name.');
   if (!email.includes('@')) back('/signup', 'Enter your work email address.');
-  if (!employerId && !isPartner) back('/signup', 'Choose your employer.');
+  if (!employerId && !isPartner) back('/signup', 'Choose your employer, or Other if it isn\u2019t listed.');
   if (password.length < 8) back('/signup', 'Use a password with at least 8 characters.');
 
   const supabase = createClient();
@@ -27,7 +29,7 @@ export async function signUp(formData: FormData) {
     email,
     password,
     options: {
-      data: { full_name: fullName, employer_id: isPartner ? '' : employerId },
+      data: { full_name: fullName, employer_id: isPartner || isOther ? '' : employerId, company: isOther ? companyOther : undefined },
       emailRedirectTo: `${siteUrl()}/auth/callback?next=/card`,
     },
   });
@@ -39,7 +41,7 @@ export async function signUp(formData: FormData) {
       'info@fortitudeclub.ca',
       `New sign-up waiting for approval: ${fullName}`,
       'A new member is waiting for approval',
-      [`${fullName} (${email}) just signed up${isPartner ? ' using the partner sign-up' : ''}.`, 'Approve or reject them in Admin \u2192 Members. Partners: link them from their studio\u2019s Partner logins section.'],
+      [`${fullName} (${email}) just signed up${isPartner ? ' using the partner sign-up' : isOther ? ` with company "Other": ${companyOther || 'not given'}` : ''}.`, 'Approve or reject them in Admin \u2192 Members. Partners: link them from their studio\u2019s Partner logins section.'],
       { label: 'Open Admin', url: `${siteUrl()}/admin` }
     ).catch(() => null);
     redirect('/card?welcome=1');
