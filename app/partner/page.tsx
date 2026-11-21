@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 import { updateDetails, submitOfferRequest, switchStudio } from '@/app/actions/partner';
 import Alerts from '@/components/Alerts';
+import fcLockup from '@/components/fc-lockup.png';
 import PartnerMediaUploader from '@/components/PartnerMediaUploader';
 
 export const dynamic = 'force-dynamic';
@@ -39,12 +40,17 @@ export default async function PartnerPortal({ searchParams }: { searchParams: { 
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div className="stack" style={{ gap: 10 }}>
             <span className="label">Partner portal</span>
-            {p.logo_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={p.logo_url} alt={p.name} style={{ height: 60, width: 'auto', maxWidth: 260, objectFit: 'contain' }} />
-            ) : (
-              <h1 style={{ fontSize: 'clamp(36px, 5vw, 56px)' }}>{p.name}</h1>
-            )}
+            <div className="row" style={{ alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={fcLockup.src} alt="Fortitude Club" width={fcLockup.width} height={fcLockup.height} style={{ height: 72, width: 'auto' }} />
+              <span aria-hidden="true" style={{ fontSize: 28, fontWeight: 300, color: 'var(--muted)' }}>×</span>
+              {p.logo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={p.logo_url} alt={p.name} style={{ height: 60, width: 'auto', maxWidth: 240, objectFit: 'contain', objectPosition: 'left center' }} />
+              ) : (
+                <span style={{ fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 300 }}>{p.name}</span>
+              )}
+            </div>
             <p className="muted">Hi {previewId ? p.name : (profile!.full_name || '').split(' ')[0] || 'there'}. Manage how {p.name} appears on Fortitude Club.</p>
           </div>
           {p.slug && <Link href={`/partners/${p.slug}`} className="btn btn-ghost" target="_blank">View my public page</Link>}
