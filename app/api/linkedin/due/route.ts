@@ -4,6 +4,12 @@ import { siteUrl } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
+/** LinkedIn's API uses "little text format": escape its reserved characters, keep hashtags clickable. */
+function toLittleText(s: string) {
+  const escaped = s.replace(/[\\|{}@\[\]()<>#*_~]/g, (m) => '\\' + m);
+  return escaped.replace(/\\#([A-Za-z][A-Za-z0-9]*)/g, (_m, tag) => `{hashtag|\\#|${tag}}`);
+}
+
 /**
  * Make calls this on a schedule with header "x-fortitude-key".
  * Returns the next approved LinkedIn post that is due (and marks it sent), or { post: null }.
@@ -21,6 +27,7 @@ export async function GET(req: Request) {
     post: {
       id: row.id,
       text: row.body,
+      text_linkedin: toLittleText(row.body),
       image_url: `${siteUrl()}/api/linkedin/image/${row.id}`,
       link: siteUrl(),
     },
