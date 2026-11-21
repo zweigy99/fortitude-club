@@ -1,114 +1,132 @@
 import { requireAdmin, siteUrl } from '@/lib/auth';
+import { fmtToronto, utcToTorontoInput } from '@/lib/time';
+import { generatePosts, savePost, approveAll, deletePost, createConnectionKey } from '@/app/actions/linkedin';
 import CopyButton from '@/components/CopyButton';
+import Alerts from '@/components/Alerts';
 
-type Draft = { id: string; title: string; text: string; image?: string | null; link?: string };
+export const dynamic = 'force-dynamic';
 
-export default async function LinkedInDrafts() {
+const DAYS: [number, string][] = [[1, 'Mon'], [2, 'Tue'], [3, 'Wed'], [4, 'Thu'], [5, 'Fri']];
+
+export default async function LinkedInStudio({ searchParams }: { searchParams: { error?: string; generated?: string; saved?: string; keyset?: string; show?: string } }) {
   const { supabase } = await requireAdmin();
-  const since30 = new Date(Date.now() - 30 * 864e5).toISOString();
-  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
-  const [{ data: partners }, { data: offers }, { count: members }, { count: redemptionsMonth }, { count: employers }] = await Promise.all([
-    supabase.from('partners').select('id, name, neighbourhood, description, logo_url, slug, created_at, offers(title, kind, active)').eq('active', true).order('created_at', { ascending: false }),
-    supabase.from('offers').select('id, title, kind, created_at, partners(name, slug, logo_url)').eq('active', true).gte('created_at', since30).order('created_at', { ascending: false }),
-    supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
-    supabase.from('redemptions').select('id', { count: 'exact', head: true }).gte('created_at', monthStart),
-    supabase.from('employers').select('id', { count: 'exact', head: true }).eq('active', true),
+  const [{ data: posts }, { data: keyDate }, { data: key }] = await Promise.all([
+    supabase.from('linkedin_posts').select('*, partners(name)').in('status', ['draft', 'approved']).order('scheduled_for', { ascending: true }),
+    supabase.rpc('linkedin_key_status'),
+    searchParams.show || searchParams.keyset ? supabase.rpc('linkedin_get_key') : Promise.resolve({ data: null }),
   ]);
+  const { data: sent } = await supabase.from('linkedin_posts').select('id, headline, body, sent_at').eq('status', 'sent').order('sent_at', { ascending: false }).limit(10);
+  const drafts = (posts ?? []).filter((p: any) => p.status === 'draft').length;
   const site = siteUrl();
-  const month = new Date().toLocaleString('en-CA', { month: 'long' });
-  const drafts: Draft[] = [];
-
-  for (const p of (partners ?? []) as any[]) {
-    const intro = (p.offers ?? []).find((o: any) => o.active && (o.kind ?? '').toLowerCase().startsWith('intro'));
-    drafts.push({
-      id: `partner-${p.id}`,
-      title: `Partner spotlight: ${p.name}`,
-      image: p.logo_url,
-      link: p.slug ? `${site}/partners/${p.slug}` : `${site}/partners`,
-      text: `Partner spotlight: ${p.name}${p.neighbourhood ? ` in ${p.neighbourhood}` : ''} \u{1F4AA}
-
-${p.description ?? ''}
-
-Fortitude Club members get ${intro ? intro.title.charAt(0).toLowerCase() + intro.title.slice(1) : 'exclusive member offers'}, plus ongoing member pricing.
-
-Fortitude connects employers with premium local wellness providers, so every employee benefit actually gets used.
-
-See the offer: ${p.slug ? `${site}/partners/${p.slug}` : `${site}/partners`}
-
-#WorkplaceWellness #EmployeeBenefits #Toronto #Wellness`,
-    });
-  }
-
-  for (const o of (offers ?? []) as any[]) {
-    drafts.push({
-      id: `offer-${o.id}`,
-      title: `New offer: ${o.title} at ${o.partners?.name}`,
-      image: o.partners?.logo_url,
-      link: `${site}/offers/${o.id}`,
-      text: `New on Fortitude Club: ${o.title} at ${o.partners?.name} \u2728
-
-Another reason to make the most of your wellness benefit this ${month}. Members can redeem it today from their Fortitude card.
-
-Not a member yet? Ask your employer about Fortitude Club, or book a call with us: ${site}/employers
-
-#WorkplaceWellness #EmployeeBenefits #Toronto`,
-    });
-  }
-
-  drafts.push({
-    id: 'milestone',
-    title: `Monthly update: ${month}`,
-    text: `Fortitude Club in ${month} \u{1F4C8}
-
-\u2022 ${(partners ?? []).length} premium local wellness partners
-\u2022 ${employers ?? 0} employers giving their teams better benefits
-\u2022 ${members ?? 0} verified members
-\u2022 ${redemptionsMonth ?? 0} offers redeemed so far this month
-
-Better benefits. Healthier teams. If you run a Toronto studio, gym or clinic and want to reach engaged local professionals, let's talk: ${site}/partners
-
-#WorkplaceWellness #Toronto #SmallBusiness`,
-  });
-
-  drafts.push({
-    id: 'partner-recruit',
-    title: 'Call for new partners',
-    text: `We're growing Fortitude Club's network of Toronto wellness partners \u{1F44B}
-
-If you run a Pilates, yoga, spin, boxing, recovery, physio or nutrition studio downtown, Fortitude connects you with highly engaged local employees, with no change at your front desk. You choose the intro offer; members book through your own system.
-
-Current partners include ${((partners ?? []) as any[]).map((p) => p.name).slice(0, 4).join(', ')}.
-
-Interested? Comment below or message us, or see how it works: ${site}/partners
-
-#Toronto #FitnessBusiness #WellnessBusiness #Partnerships`,
-  });
+  const today = new Date().toISOString().slice(0, 10);
 
   return (
     <div className="stack-lg">
       <div className="stack">
         <h1 style={{ fontSize: 56 }}>LinkedIn posts</h1>
-        <p className="muted">Ready-to-post updates written from your live partners, offers and numbers. Edit if you like, click <b>Copy text</b>, then <b>Open LinkedIn</b> and paste. To post as Fortitude Club, choose your company page in LinkedIn&apos;s post box.</p>
+        <p className="muted">Write posts with AI, approve them, and Make publishes each one to the Fortitude Club company page on its scheduled day.</p>
       </div>
-      {drafts.map((d) => (
-        <div key={d.id} className="panel stack">
-          <div className="row" style={{ justifyContent: 'space-between' }}>
-            <h3>{d.title}</h3>
-            {d.image && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={d.image} alt="" style={{ height: 40, width: 'auto', maxWidth: 140, objectFit: 'contain' }} />
-            )}
-          </div>
-          <label htmlFor={d.id} className="sr-only">Post text for {d.title}</label>
-          <textarea id={d.id} defaultValue={d.text} style={{ minHeight: 230 }} />
-          <div className="row">
-            <CopyButton targetId={d.id} />
-            <a href="https://www.linkedin.com/feed/?shareActive=true" target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-small">Open LinkedIn</a>
-            {d.image && <a href={d.image} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-small">Open logo image</a>}
-            {d.link && <a href={d.link} target="_blank" rel="noopener noreferrer" className="small">Preview the page it links to</a>}
+      <Alerts
+        error={searchParams.error}
+        notice={searchParams.generated ? `${searchParams.generated} new draft posts written. Review and approve them below.` : searchParams.saved ? 'Saved.' : searchParams.keyset ? 'New connection key created. Copy it into Make below.' : undefined}
+      />
+
+      <form action={generatePosts} className="panel form">
+        <h3>Write new posts</h3>
+        <div className="split" style={{ gap: 16 }}>
+          <div className="field" style={{ maxWidth: 140 }}><label htmlFor="g-count">How many</label><input id="g-count" name="count" type="number" min={1} max={12} defaultValue={6} /></div>
+          <div className="field" style={{ maxWidth: 200 }}><label htmlFor="g-start">Starting</label><input id="g-start" name="start" type="date" defaultValue={today} /></div>
+          <div className="field" style={{ maxWidth: 140 }}><label htmlFor="g-time">Time (Toronto)</label><input id="g-time" name="time" type="time" defaultValue="09:00" /></div>
+        </div>
+        <fieldset className="row" style={{ border: 0, padding: 0, gap: 16 }}>
+          <legend className="small" style={{ marginBottom: 6 }}>Days to post</legend>
+          {DAYS.map(([n, l]) => (
+            <label key={n} className="check"><input type="checkbox" name="days" value={n} defaultChecked={n === 2 || n === 4} /> {l}</label>
+          ))}
+        </fieldset>
+        <div className="field"><label htmlFor="g-focus">Anything to focus on? (optional)</label><input id="g-focus" name="focus" placeholder="e.g. welcome Othership, push employer sign-ups before the holidays" /></div>
+        <div><button className="btn btn-primary" type="submit">Write posts</button></div>
+        <p className="small muted">Takes about 20 seconds. Posts use your live partners and offers, never include promo codes, and each gets a branded image.</p>
+      </form>
+
+      <div className="stack">
+        <div className="row" style={{ justifyContent: 'space-between' }}>
+          <h2 style={{ fontSize: 32 }}>Upcoming ({(posts ?? []).length})</h2>
+          {drafts > 0 && <form action={approveAll}><button className="btn btn-teal" type="submit">Approve all {drafts} drafts</button></form>}
+        </div>
+        <p className="small muted">Only <b>approved</b> posts are published. Make checks every morning and posts anything approved whose time has passed.</p>
+        {(posts ?? []).length === 0 && <div className="panel"><p className="muted">No upcoming posts. Write some above.</p></div>}
+        {(posts ?? []).map((p: any) => (
+          <form key={p.id} id={`post-${p.id}`} action={savePost} className="panel form">
+            <input type="hidden" name="id" value={p.id} />
+            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="row" style={{ gap: 10 }}>
+                {p.status === 'approved' ? <span className="badge badge-ok">Approved</span> : <span className="badge badge-warn">Draft</span>}
+                <span className="small">{fmtToronto(p.scheduled_for)}</span>
+                {p.partners?.name && <span className="small muted">Partner: {p.partners.name}</span>}
+              </div>
+              <a href={`${site}/api/linkedin/image/${p.id}`} target="_blank" rel="noopener noreferrer" className="small">Open image</a>
+            </div>
+            <div className="split" style={{ gap: 16, alignItems: 'start' }}>
+              <div className="stack" style={{ gap: 12 }}>
+                <div className="field"><label htmlFor={`h-${p.id}`}>Image headline</label><input id={`h-${p.id}`} name="headline" defaultValue={p.headline ?? ''} maxLength={80} /></div>
+                <div className="field"><label htmlFor={`b-${p.id}`}>Post text</label><textarea id={`b-${p.id}`} name="body" defaultValue={p.body} style={{ minHeight: 200 }} /></div>
+                <div className="field" style={{ maxWidth: 240 }}><label htmlFor={`w-${p.id}`}>Post on (Toronto time)</label><input id={`w-${p.id}`} name="when" type="datetime-local" defaultValue={utcToTorontoInput(p.scheduled_for)} /></div>
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`/api/linkedin/image/${p.id}`} alt="Post image preview" style={{ width: '100%', borderRadius: 4, border: '1px solid var(--line)' }} />
+            </div>
+            <div className="row">
+              <button className="btn btn-ghost btn-small" type="submit" name="intent" value="save">Save</button>
+              {p.status === 'draft' ? (
+                <button className="btn btn-teal btn-small" type="submit" name="intent" value="approve">Approve</button>
+              ) : (
+                <button className="btn btn-ghost btn-small" type="submit" name="intent" value="unapprove">Back to draft</button>
+              )}
+              <button className="btn btn-ghost btn-small" type="submit" name="intent" value="now">Approve &amp; post at next check</button>
+              <button className="btn btn-danger btn-small" type="submit" formAction={deletePost}>Skip</button>
+            </div>
+          </form>
+        ))}
+      </div>
+
+      <div className="panel stack" id="automation">
+        <h2 style={{ fontSize: 28 }}>Automatic posting (Make)</h2>
+        <p className="small muted">Make asks the website for the next due post with this request. Keep the connection key private: anyone with it could trigger your approved posts early.</p>
+        <div className="field"><label>Request URL (GET)</label><code style={{ wordBreak: 'break-all' }}>{site}/api/linkedin/due</code></div>
+        <div className="field"><label>Header name</label><code>x-fortitude-key</code></div>
+        <div className="field">
+          <label>Connection key</label>
+          {key ? (
+            <div className="row" style={{ alignItems: 'center' }}>
+              <textarea id="conn-key" readOnly defaultValue={key as string} style={{ minHeight: 44, fontFamily: 'monospace', fontSize: 13 }} />
+              <CopyButton targetId="conn-key" label="Copy key" />
+            </div>
+          ) : keyDate ? (
+            <p className="small">Created {fmtToronto(keyDate as string)}. <a href="/admin/linkedin?show=1#automation">Show key</a></p>
+          ) : (
+            <p className="small muted">No key yet.</p>
+          )}
+        </div>
+        <form action={createConnectionKey}><button className="btn btn-primary btn-small" type="submit">{keyDate ? 'Replace connection key' : 'Create connection key'}</button></form>
+        {keyDate && <p className="small muted">Replacing the key stops Make until you paste the new key into its HTTP module.</p>}
+      </div>
+
+      {(sent ?? []).length > 0 && (
+        <div className="stack">
+          <h2 style={{ fontSize: 28 }}>Recently sent to LinkedIn</h2>
+          <div className="table-wrap">
+            <table>
+              <thead><tr><th>Sent</th><th>Headline</th><th>Start of post</th></tr></thead>
+              <tbody>
+                {(sent as any[]).map((s) => (
+                  <tr key={s.id}><td className="small">{fmtToronto(s.sent_at)}</td><td className="small">{s.headline}</td><td className="small muted">{s.body.slice(0, 90)}…</td></tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
-      ))}
+      )}
     </div>
   );
 }
