@@ -30,7 +30,7 @@ export async function GET(req: Request) {
       id: row.id,
       text: row.body,
       text_linkedin: toLittleText(row.body),
-      image_url: `${siteUrl()}/api/linkedin/image/${row.id}`,
+      image_url: `${siteUrl()}/api/linkedin/image/${row.id}?v=${Date.now()}`,
       link: siteUrl(),
     },
   });
