@@ -1,0 +1,3 @@
+{
+  "crons": [{ "path": "/api/linkedin/suggest", "schedule": "0 12 * * *" }]
+}
