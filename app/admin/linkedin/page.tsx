@@ -65,7 +65,7 @@ export default async function LinkedInStudio({ searchParams }: { searchParams: {
                 <span className="small">{fmtToronto(p.scheduled_for)}</span>
                 {p.partners?.name && <span className="small muted">Partner: {p.partners.name}</span>}
               </div>
-              <a href={`${site}/api/linkedin/image/${p.id}`} target="_blank" rel="noopener noreferrer" className="small">Open image</a>
+              <a href={`${site}/api/linkedin/image/${p.id}?v=2`} target="_blank" rel="noopener noreferrer" className="small">Open image</a>
             </div>
             <div className="split" style={{ gap: 16, alignItems: 'start' }}>
               <div className="stack" style={{ gap: 12 }}>
@@ -74,7 +74,7 @@ export default async function LinkedInStudio({ searchParams }: { searchParams: {
                 <div className="field" style={{ maxWidth: 240 }}><label htmlFor={`w-${p.id}`}>Post on (Toronto time)</label><input id={`w-${p.id}`} name="when" type="datetime-local" defaultValue={utcToTorontoInput(p.scheduled_for)} /></div>
               </div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/api/linkedin/image/${p.id}`} alt="Post image preview" style={{ width: '100%', borderRadius: 4, border: '1px solid var(--line)' }} />
+              <img src={`/api/linkedin/image/${p.id}?v=2`} alt="Post image preview" style={{ width: '100%', borderRadius: 4, border: '1px solid var(--line)' }} />
             </div>
             <div className="row">
               <button className="btn btn-ghost btn-small" type="submit" name="intent" value="save">Save</button>
