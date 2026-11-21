@@ -5,6 +5,8 @@ import { torontoToUtc } from '@/lib/time';
 import { sendSimple } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 export const maxDuration = 60;
 
 const MODEL = process.env.ANTHROPIC_POSTS_MODEL || 'claude-sonnet-5-5';
@@ -26,7 +28,7 @@ export async function GET(req: Request) {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return NextResponse.json({ error: 'ANTHROPIC_API_KEY missing' }, { status: 500 });
 
-  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { auth: { persistSession: false } });
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { auth: { persistSession: false }, global: { fetch: (u: any, o: any) => fetch(u, { ...o, cache: 'no-store' }) } });
   const { data: prep, error: prepErr } = await supabase.rpc('linkedin_daily_prep');
   if (prepErr) return NextResponse.json({ error: prepErr.message }, { status: 500 });
   const p: any = prep;
