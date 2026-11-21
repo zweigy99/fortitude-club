@@ -2,9 +2,11 @@ import { ImageResponse } from 'next/og';
 import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
-  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { auth: { persistSession: false } });
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { auth: { persistSession: false }, global: { fetch: (u: any, o: any) => fetch(u, { ...o, cache: 'no-store' }) } });
   const { data } = await supabase.rpc('linkedin_card', { p_id: params.id });
   const c = ((data as any[]) ?? [])[0] ?? {};
   const headline: string = c.headline || 'Better benefits. Healthier teams.';
